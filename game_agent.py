@@ -3,6 +3,7 @@ test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
+import time
 
 
 class SearchTimeout(Exception):
@@ -35,7 +36,19 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    #raise NotImplementedError
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+    
+    player_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+#    print('possible moves for player from ' + str(game.get_player_location(player)) + ': ' + str(player_moves))
+#    print('possible moves for opponent from ' + str(game.get_player_location(game.get_opponent(player))) + ': ' + str(opponent_moves))
+#    print('possible moves for player/opponent: ' + str(len(player_moves)) + '/' + str(len(opponent_moves)))
+    
+    return len(player_moves) - len(opponent_moves)
 
 
 def custom_score_2(game, player):
@@ -213,8 +226,74 @@ class MinimaxPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
-
+        #raise NotImplementedError
+        start_time = time.time()
+        
+        moves = game.get_legal_moves()
+        best_score = float("-inf")
+        best_move = (-1, -1)
+        for move in moves:
+            after_move = game.forecast_move(move)
+            print('evaluating player 1 move ' + str(move))
+            score = self.min_value(after_move, depth - 1)
+            if score > best_score:
+                print('adjusting score: ' + str(best_score) + ' -> ' + str(score))
+                best_score = score
+                best_move = move
+                
+        print('best move: ' + str(game.get_player_location(game.active_player)) + ' -> ' + str(best_move))
+        end_time = time.time()
+        print('execution time for minimax: ' + str(end_time - start_time) + ' ms')
+        return best_move
+    
+    def max_value(self, game, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        
+        active_player = game.active_player
+        if depth == 0 or game.is_loser(active_player):
+            return self.score(game, active_player)
+        
+        moves = game.get_legal_moves()
+        best_score = float("-inf")
+        best_move = None
+        for move in moves:
+            after_move = game.forecast_move(move)
+#            print('evaluating player 1 move ' + str(move))
+            score = self.min_value(after_move, depth - 1)
+            if score > best_score:
+#                print('adjusting max score for depth ' + str(depth) + ': ' + str(best_score) + ' -> ' + str(score))
+#                print('current best max move for depth ' + str(depth) + ': ' + str(game.get_player_location(active_player)) + ' -> ' + str(move))
+                best_score = score
+                best_move = move
+        
+#        print('best max move for depth ' + str(depth) + ': ' + str(game.get_player_location(active_player)) + ' -> ' + str(best_move) + ' - score ' + str(best_score))
+        return best_score
+        
+    def min_value(self, game, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+            
+        active_player = game.active_player
+        if depth == 0 or game.is_loser(active_player):
+            return -self.score(game, active_player)
+        
+        moves = game.get_legal_moves()
+        best_score = float("inf")
+        best_move = None
+        for move in moves:
+            after_move = game.forecast_move(move)
+#            print('evaluating player 2 move ' + str(move))
+            score = self.max_value(after_move, depth - 1)
+            if score < best_score:
+#                print('adjusting min score for depth ' + str(depth) + ': ' + str(best_score) + ' -> ' + str(score))
+#                print('current best min move for depth ' + str(depth) + ': ' + str(game.get_player_location(active_player)) + ' -> ' + str(move))
+                best_score = score
+                best_move = move
+        
+#        print('best min move for depth ' + str(depth) + ': ' + str(game.get_player_location(active_player)) + ' -> ' + str(best_move) + ' - score ' + str(best_score))
+        return best_score
+    
 
 class AlphaBetaPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using iterative deepening minimax
