@@ -477,7 +477,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                 best_move = move
                 if best_score >= beta:
                     # beta is what the minimizing player can have at least. If the maximizing player can have more
-                    # than beta here, we can skip the rest of the subbranch. The whole branch will influence the final score.
+                    # than beta here, we can skip the rest of the subbranch. The whole branch will not be chosen.
                     print('beta pruning after checking {}/{} moves'.format(count, len(moves)))
                     return (best_score, best_move)
                 
