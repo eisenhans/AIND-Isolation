@@ -3,7 +3,7 @@ own agent and example heuristic functions.
 
     ************************************************************************
     ***********  YOU DO NOT NEED TO MODIFY ANYTHING IN THIS FILE  **********
-    ************************************************************************
+    ******************************2******************************************
 """
 
 from random import randint
@@ -256,9 +256,11 @@ if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
-    #player1 = RandomPlayer()
     player1 = HumanPlayer()
+#    player1 = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_1)
+#    player2 = game_agent.MinimaxPlayer()
     #player2 = GreedyPlayer()
+#    player2 = game_agent.AlphaBetaPlayer()
     player2 = game_agent.AlphaBetaPlayer()
     game = Board(player1, player2)
 
@@ -285,7 +287,7 @@ if __name__ == "__main__":
 
     # play the remainder of the game automatically -- outcome can be "illegal
     # move", "timeout", or "forfeit"
-    winner, history, outcome = game.play(60000)
+    winner, history, outcome = game.play(time_limit=60000)
     print("\nWinner: {}\nOutcome: {}".format(winner, outcome))
     print(game.to_string())
     print("Move history:\n{!s}".format(history))

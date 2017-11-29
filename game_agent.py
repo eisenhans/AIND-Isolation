@@ -5,6 +5,7 @@ and include the results in your report.
 import random
 import time
 import timeit
+import isolation
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -50,6 +51,13 @@ def custom_score(game, player):
     
     return len(player_moves) - len(opponent_moves)
 
+def custom_score_1(game, player):
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+    
+    return len(game.get_legal_moves(player))
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -73,9 +81,49 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+    
+    current_square_player = game.get_player_location(player)
+    visited_squares_player = {current_square_player}
+    depth = 5
+#    print('looking for squares from ' + str(current_square_player) + ' (depth ' + str(depth) + ')')
+    visit_squares(game, current_square_player, visited_squares_player, depth)
+#    print('squares found: ' + str(visited_squares_player))
+    
+#    current_square_opponent = game.get_player_location(game.get_opponent(player))
+#    visited_squares_opponent = {current_square_opponent}
+#    visit_squares(game, current_square_opponent, visited_squares_opponent, 5)
+    
+    return len(visited_squares_player) #- len(visited_squares_opponent)
+    
+def visit_squares(game, square, visited, depth):
+    new_squares = set(get_moves(game, square)) - visited
+#    print('visited so far: ' + str(visited) + ', current square: ' + str(square) + ', new squares found: ' + str(new_squares) + ', remaining depth: ' + str(depth))
+    visited.update(new_squares)
+    if depth == 1:
+        return
+    
+    for next_square in new_squares:
+        visit_squares(game, next_square, visited, depth - 1)
+     
+def get_moves(game, loc):
+    """Generate the list of possible moves for an L-shaped motion (like a
+    knight in chess).
+    """
+    if loc == isolation.Board.NOT_MOVED:
+        return game.get_blank_spaces()
 
+    r, c = loc
+    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2),
+                  (1, -2), (1, 2), (2, -1), (2, 1)]
+    valid_moves = [(r + dr, c + dc) for dr, dc in directions
+                   if game.move_is_legal((r + dr, c + dc))]
+    
+#    print('valid moves from ' + str(loc) + ': ' + str(valid_moves))
+    return valid_moves        
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -329,16 +377,24 @@ class AlphaBetaPlayer(IsolationPlayer):
         # TODO: finish this function!
 
         best_move = (-1, -1)
-        squares = game.width * game.height
+        max_depth = len(game.get_blank_spaces())
 
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            for depth in range(1, len(game.get_blank_spaces)):
-                best_move = self.alphabeta(game, depth)
-                print('best move for depth ' + str(depth) + ': ' + str(best_move) + ' - time left: ' + str(time_left()) + ' ms')
+            for depth in range(2, 3):
+                better_move = self.alphabeta(game, depth)
+                if better_move != None:
+                    best_move = better_move
+                    print('best move for depth ' + str(depth) + ': ' + str(best_move) + ' - time left: ' + str(time_left()) + ' ms')
+                else:
+                    print('no more moves for depth ' + str(depth))
+                    if depth == 1:
+                        print('strange case: ' + game.to_string())
+                    break
 
         except SearchTimeout:
+            print('caught search timeout')
             pass  # Handle any actions required after timeout as needed
 
         # Return the best move from the last completed search iteration
@@ -390,6 +446,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                 testing.
         """
         if self.time_left() < self.TIMER_THRESHOLD:
+            print('raising timeout: time left is ' + str(self.time_left()))
             raise SearchTimeout()
 
         start_time = time.time()
@@ -400,6 +457,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         
     def max_value(self, game, depth, alpha, beta):
         if self.time_left() < self.TIMER_THRESHOLD:
+            print('raising timeout: time left is ' + str(self.time_left()))
             raise SearchTimeout()
         
         active_player = game.active_player
@@ -409,21 +467,28 @@ class AlphaBetaPlayer(IsolationPlayer):
         moves = game.get_legal_moves()
         best_score = float("-inf")
         best_move = None
+        count = 0
         for move in moves:
+            count += 1
             after_move = game.forecast_move(move)
             (score, min_move) = self.min_value(after_move, depth - 1, alpha, beta)
             if score > best_score:
                 best_score = score
                 best_move = move
                 if best_score >= beta:
+                    # beta is what the minimizing player can have at least. If the maximizing player can have more
+                    # than beta here, we can skip the rest of the subbranch. The whole branch will influence the final score.
+                    print('beta pruning after checking {}/{} moves'.format(count, len(moves)))
                     return (best_score, best_move)
                 
+                print('no beta pruning')
                 alpha = max(alpha, best_score)
         
         return (best_score, best_move)
 
     def min_value(self, game, depth, alpha, beta):
         if self.time_left() < self.TIMER_THRESHOLD:
+            print('raising timeout: time left is ' + str(self.time_left()))
             raise SearchTimeout()
         
         active_player = game.active_player
@@ -433,15 +498,24 @@ class AlphaBetaPlayer(IsolationPlayer):
         moves = game.get_legal_moves()
         best_score = float("inf")
         best_move = None
+        count = 0
         for move in moves:
+            count += 1
             after_move = game.forecast_move(move)
             (score, max_move) = self.max_value(after_move, depth - 1, alpha, beta)
             if score < best_score:
                 best_score = score
                 best_move = move
                 if best_score <= alpha:
+                    print('alpha pruning after checking {}/{} moves'.format(count, len(moves)))
                     return (best_score, best_move)
                 
+                print('no alpha pruning')
+                if best_score < beta:
+                    print('updating beta: {} -> {}'.format(beta, best_score))
                 beta = min(beta, best_score)
         
         return (best_score, best_move)      
+    
+    def __str__(self):
+        return str(type(self)) + str(self.score)
