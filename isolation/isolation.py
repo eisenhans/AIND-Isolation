@@ -313,6 +313,8 @@ class Board(object):
             (e.g., timeout or invalid move).
         """
         move_history = []
+        move_history.append(list(self.get_player_location(self._active_player)))
+        move_history.append(list(self.get_player_location(self._inactive_player)))
 
         time_millis = lambda: 1000 * timeit.default_timer()
 

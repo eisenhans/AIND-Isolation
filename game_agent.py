@@ -57,7 +57,10 @@ def custom_score_1(game, player):
     if game.is_loser(player):
         return float('-inf')
     
-    return len(game.get_legal_moves(player))
+    player_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    
+    return 2 * len(player_moves) - len(opponent_moves)
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -93,11 +96,11 @@ def custom_score_2(game, player):
     visit_squares(game, current_square_player, visited_squares_player, depth)
 #    print('squares found: ' + str(visited_squares_player))
     
-#    current_square_opponent = game.get_player_location(game.get_opponent(player))
-#    visited_squares_opponent = {current_square_opponent}
-#    visit_squares(game, current_square_opponent, visited_squares_opponent, 5)
+    current_square_opponent = game.get_player_location(game.get_opponent(player))
+    visited_squares_opponent = {current_square_opponent}
+    visit_squares(game, current_square_opponent, visited_squares_opponent, depth)
     
-    return len(visited_squares_player) #- len(visited_squares_opponent)
+    return len(visited_squares_player) - len(visited_squares_opponent)
     
 def visit_squares(game, square, visited, depth):
     new_squares = set(get_moves(game, square)) - visited
@@ -279,9 +282,9 @@ class MinimaxPlayer(IsolationPlayer):
         
         (score, move) = self.max_value(game, depth)
         
-        print('best move: ' + str(game.get_player_location(game.active_player)) + ' -> ' + str(move))
+#        print('best move: ' + str(game.get_player_location(game.active_player)) + ' -> ' + str(move))
         end_time = time.time()
-        print('execution time for minimax: ' + str(end_time - start_time) + ' sec')
+#        print('execution time for minimax: ' + str(end_time - start_time) + ' sec')
         return move
     
     def max_value(self, game, depth):
@@ -294,7 +297,7 @@ class MinimaxPlayer(IsolationPlayer):
         
         moves = game.get_legal_moves()
         best_score = float("-inf")
-        best_move = None
+        best_move = moves[0] if moves else None
         for move in moves:
             after_move = game.forecast_move(move)
 #            print('evaluating player 1 move ' + str(move))
@@ -318,7 +321,7 @@ class MinimaxPlayer(IsolationPlayer):
         
         moves = game.get_legal_moves()
         best_score = float("inf")
-        best_move = None
+        best_move = moves[0] if moves else None
         for move in moves:
             after_move = game.forecast_move(move)
 #            print('evaluating player 2 move ' + str(move))
@@ -371,11 +374,12 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         time_millis = lambda: 1000 * timeit.default_timer()
         move_start = time_millis()
-        self.time_left = lambda : 1000 - (time_millis() - move_start)
+        self.time_left = lambda : move_start + 150 - time_millis()
         
 #        self.time_left = time_left
         # TODO: finish this function!
-
+#        print('finding move for player {}'.format(game.active_player))
+        
         best_path = []
         max_depth = len(game.get_blank_spaces())
 
@@ -383,24 +387,22 @@ class AlphaBetaPlayer(IsolationPlayer):
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
             for depth in range(1, max_depth):
-                better_path = self.alphabeta(game, depth)
+                better_path = self.alphabeta(game, depth, best_path)
                 if better_path:
                     best_path = better_path
-                    print('best path for depth ' + str(depth) + ': ' + str(best_path) + ' - time left: ' + str(time_left()) + ' ms')
+#                    print('best path for depth ' + str(depth) + ': ' + str(best_path) + ' - time left: ' + str(time_left()) + ' ms')
                 else:
-                    print('no more moves for depth ' + str(depth))
-                    if depth == 1:
-                        print('strange case: ' + game.to_string())
+#                    print('no more moves for depth ' + str(depth))
                     break
 
         except SearchTimeout:
-            print('caught search timeout')
+#            print('caught search timeout')
             pass  # Handle any actions required after timeout as needed
 
         # Return the best move from the last completed search iteration
         return best_path[0] if best_path else (-1, -1)    
 
-    def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
+    def alphabeta(self, game, depth, preferred_path, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
         described in the lectures.
 
@@ -446,18 +448,18 @@ class AlphaBetaPlayer(IsolationPlayer):
                 testing.
         """
         if self.time_left() < self.TIMER_THRESHOLD:
-            print('raising timeout: time left is ' + str(self.time_left()))
+#            print('raising timeout: time left is ' + str(self.time_left()))
             raise SearchTimeout()
 
         start_time = time.time()
-        score, path = self.max_value(game, depth, alpha, beta)
+        score, path = self.max_value(game, depth, preferred_path, alpha, beta)
         end_time = time.time()
-        print('execution time for alphabeta: ' + str(end_time - start_time) + ' sec')
+#        print('execution time for alphabeta: ' + str((end_time - start_time) * 1000) + ' ms')
         return path
         
-    def max_value(self, game, depth, alpha, beta):
+    def max_value(self, game, depth, preferred_path, alpha, beta):
         if self.time_left() < self.TIMER_THRESHOLD:
-            print('raising timeout: time left is ' + str(self.time_left()))
+#            print('raising timeout: time left is ' + str(self.time_left()))
             raise SearchTimeout()
         
         active_player = game.active_player
@@ -465,13 +467,16 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (self.score(game, active_player), [])
         
         moves = game.get_legal_moves()
+        if preferred_path and preferred_path[0] in moves:
+            moves.remove(preferred_path[0])
+            moves = [preferred_path[0]] + moves
         best_score = float("-inf")
-        best_path = None
+        best_path = []
         count = 0
         for move in moves:
             count += 1
             after_move = game.forecast_move(move)
-            (score, path) = self.min_value(after_move, depth - 1, alpha, beta)
+            (score, path) = self.min_value(after_move, depth - 1, preferred_path[1:], alpha, beta)
             if score > best_score:
                 best_score = score
                 best_path = [move] + path
@@ -486,9 +491,9 @@ class AlphaBetaPlayer(IsolationPlayer):
         
         return (best_score, best_path)
 
-    def min_value(self, game, depth, alpha, beta):
+    def min_value(self, game, depth, preferred_path, alpha, beta):
         if self.time_left() < self.TIMER_THRESHOLD:
-            print('raising timeout: time left is ' + str(self.time_left()))
+#            print('raising timeout: time left is ' + str(self.time_left()))
             raise SearchTimeout()
         
         active_player = game.active_player
@@ -496,13 +501,16 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (-self.score(game, active_player), [])
         
         moves = game.get_legal_moves()
+        if preferred_path and preferred_path[0] in moves:
+            moves.remove(preferred_path[0])
+            moves = [preferred_path[0]] + moves
         best_score = float("inf")
-        best_path = None
+        best_path = []
         count = 0
         for move in moves:
             count += 1
             after_move = game.forecast_move(move)
-            (score, path) = self.max_value(after_move, depth - 1, alpha, beta)
+            (score, path) = self.max_value(after_move, depth - 1, preferred_path[1:], alpha, beta)
             if score < best_score:
                 best_score = score
                 best_path = [move] + path
@@ -511,11 +519,21 @@ class AlphaBetaPlayer(IsolationPlayer):
                     return (best_score, best_path)
                 
 #                print('no alpha pruning')
-                if best_score < beta:
-                    print('updating beta: {} -> {}'.format(beta, best_score))
+#                if best_score < beta:
+#                    print('updating beta: {} -> {}'.format(beta, best_score))
                 beta = min(beta, best_score)
         
         return (best_score, best_path)      
     
     def __str__(self):
-        return str(type(self)) + str(self.score)
+        return type(self).__name__ + '|' + str(self.score.__name__)
+    
+class LazyAlphaBetaPlayer(AlphaBetaPlayer):
+    def get_move(self, game, time_left):
+        if len(game.get_blank_spaces()) >= 32:
+            legal_moves = game.get_legal_moves()
+            if not legal_moves:
+                return (-1, -1)
+            return legal_moves[random.randint(0, len(legal_moves) - 1)]
+        
+        return AlphaBetaPlayer.get_move(self, game, time_left)

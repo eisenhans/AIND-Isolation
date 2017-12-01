@@ -89,15 +89,15 @@ class IsolationTest(unittest.TestCase):
 #        best_move = player.alphabeta(self.game, 7)
 #        self.assertTrue(best_move in [(3, 6), (6, 3)], 'best move: ' + str(best_move))        
 
-#    def test_alphabeta_iterative_deepening(self):
-#        player = game_agent.AlphaBetaPlayer()
-#        best_move = player.get_move(self.game, self.create_clock())
-#        self.assertTrue(best_move in [(2, 3), (3, 6), (6, 3)], 'best move: ' + str(best_move))
-        
-    def test_alphabeta_iterative_deepening_2(self):
-        player = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_2)
+    def test_alphabeta_iterative_deepening(self):
+        player = game_agent.AlphaBetaPlayer()
         best_move = player.get_move(self.game, self.create_clock())
-        self.assertTrue(best_move in [(2, 3), (2, 5), (3, 6), (5, 2), (5, 6), (6, 3)], 'best move: ' + str(best_move))          
+        self.assertTrue(best_move in [(2, 3), (3, 6), (6, 3)], 'best move: ' + str(best_move))
+        
+#    def test_alphabeta_iterative_deepening_2(self):
+#        player = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_2)
+#        best_move = player.get_move(self.game, self.create_clock())
+#        self.assertTrue(best_move in [(2, 3), (2, 5), (3, 6), (5, 2), (5, 6), (6, 3)], 'best move: ' + str(best_move))          
 
 if __name__ == '__main__':
     unittest.main()

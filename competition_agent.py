@@ -5,6 +5,7 @@ champions) in a tournament.
          COMPLETING AND SUBMITTING A COMPETITION AGENT IS OPTIONAL
 """
 import random
+import game_agent
 
 
 class SearchTimeout(Exception):
