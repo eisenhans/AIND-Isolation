@@ -342,3 +342,54 @@ class Board(object):
             move_history.append(list(curr_move))
 
             self.apply_move(curr_move)
+            
+    def play_moves(self, move_count, time_limit=TIME_LIMIT_MILLIS):
+        """Execute a match between the players by alternately soliciting them
+        to select a move and applying it in the game.
+
+        Parameters
+        ----------
+        time_limit : numeric (optional)
+            The maximum number of milliseconds to allow before timeout
+            during each turn.
+
+        Returns
+        ----------
+        (player, list<[(int, int),]>, str)
+            Return multiple including the winning player, the complete game
+            move history, and a string indicating the reason for losing
+            (e.g., timeout or invalid move).
+        """
+        move_history = []
+        move_history.append(list(self.get_player_location(self._active_player)))
+        move_history.append(list(self.get_player_location(self._inactive_player)))
+
+        time_millis = lambda: 1000 * timeit.default_timer()
+
+#        while True:
+        while len(move_history) < move_count * 2:
+
+            legal_player_moves = self.get_legal_moves()
+            game_copy = self.copy()
+
+            move_start = time_millis()
+            time_left = lambda : time_limit - (time_millis() - move_start)
+            curr_move = self._active_player.get_move(game_copy, time_left)
+            move_end = time_left()
+
+            if curr_move is None:
+                curr_move = Board.NOT_MOVED
+
+            if move_end < 0:
+                return self._inactive_player, move_history, "timeout", self
+
+            if curr_move not in legal_player_moves:
+                if len(legal_player_moves) > 0:
+                    return self._inactive_player, move_history, "forfeit", self
+                return self._inactive_player, move_history, "illegal move", self
+
+            move_history.append(list(curr_move))
+
+            self.apply_move(curr_move)
+            
+        return None, move_history, "game running", self          

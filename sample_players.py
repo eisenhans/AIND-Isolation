@@ -7,6 +7,7 @@ own agent and example heuristic functions.
 """
 
 from random import randint
+import monte_carlo_player
 import game_agent
 
 def null_score(game, player):
@@ -252,76 +253,44 @@ class HumanPlayer():
         return legal_moves[index]
 
 
-def play(player_a, player_b):
-    if randint(0, 1):
-        player1 = player_a
-        player2 = player_b
-    else:
-        player1 = player_b
-        player2 = player_a
-        
+if __name__ == "__main__":
+    from isolation import Board
+
     # create an isolation board (by default 7x7)
-    player1 = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_2)
-    player2 = game_agent.AlphaBetaPlayer()
+    player1 = monte_carlo_player.MonteCarloPlayer()
 #    player1 = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_1)
 #    player2 = game_agent.MinimaxPlayer()
-#    player2 = game_agent.AlphaBetaPlayer()
     #player2 = GreedyPlayer()
+    player2 = game_agent.AlphaBetaPlayer()
+#    player2 = monte_carlo_player.MonteCarloPlayer()
     game = Board(player1, player2)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
-    player_1_start = [randint(0, 6), randint(0, 6)]
-    player_2_start = None
-    while player_2_start == None or player_2_start == player_1_start:
-        player_2_start = [randint(0, 6), randint(0, 6)]
-    
-    game.apply_move(player_1_start)
-    game.apply_move(player_2_start)
+    game.apply_move((2, 3))
+    game.apply_move((0, 5))
+#    game.apply_move((2, 2))
+#    game.apply_move((4, 4))
     print(game.to_string())
 
     # players take turns moving on the board, so player1 should be next to move
     assert(player1 == game.active_player)
 
     # get a list of the legal moves available to the active player
-#    print(game.get_legal_moves())
+    print(game.get_legal_moves())
 
     # get a successor of the current state by making a copy of the board and
     # applying a move. Notice that this does NOT change the calling object
     # (unlike .apply_move()).
-#    new_game = game.forecast_move((1, 1))
-#    assert(new_game.to_string() != game.to_string())
+    new_game = game.forecast_move((1, 1))
+    assert(new_game.to_string() != game.to_string())
 #    print("\nOld state:\n{}".format(game.to_string()))
 #    print("\nNew state:\n{}".format(new_game.to_string()))
 
     # play the remainder of the game automatically -- outcome can be "illegal
     # move", "timeout", or "forfeit"
-    winner, history, outcome = game.play(60000)
+    winner, history, outcome = game.play(time_limit=60000)
     print("\nWinner: {}\nOutcome: {}".format(winner, outcome))
     print(game.to_string())
     print("Move history:\n{!s}".format(history))
-    
-    return player_a if len(history) % 2 == 1 else player_b
-
-if __name__ == "__main__":
-    from isolation import Board
-
-    player_a = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_2)
-    player_b = game_agent.AlphaBetaPlayer()
-    print('starting match: {} - {}'.format(player_a, player_b))
-
-    score_a = 0
-    score_b = 0
-    for game_count in range(1, 11):
-        print('starting game {}'.format(game_count))
-        winner = play(player_a, player_b)
-        if winner == player_a:
-            score_a += 1
-        if winner == player_b:
-            score_b += 1
-        print('winner of game {}: {}'.format(game_count, winner))
-        
-    print('Score {} against {}: {} - {}'.format(player_a, player_b, score_a, score_b))
-
-    

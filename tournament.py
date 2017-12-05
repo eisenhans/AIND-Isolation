@@ -22,6 +22,7 @@ from sample_players import (RandomPlayer, open_move_score,
                             improved_score, center_score)
 from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
                         custom_score_2, custom_score_3)
+from monte_carlo_player import MonteCarloPlayer
 
 NUM_MATCHES = 5  # number of matches against each opponent
 TIME_LIMIT = 150  # number of milliseconds before timeout
@@ -130,7 +131,7 @@ def main():
     # Define two agents to compare -- these agents will play from the same
     # starting position against the same adversaries in the tournament
     test_agents = [
-        Agent(AlphaBetaPlayer(score_fn=custom_score), "custom_score_1"),
+        Agent(MonteCarloPlayer(), "MonteCarlo"),
         Agent(AlphaBetaPlayer(score_fn=custom_score), "custom_score_2"),
 #        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
 #        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
