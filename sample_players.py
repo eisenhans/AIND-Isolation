@@ -7,8 +7,9 @@ own agent and example heuristic functions.
 """
 
 from random import randint
-import opening_player
 import game_agent
+import math
+import isolation
 
 def null_score(game, player):
     """This heuristic presumes no knowledge for non-terminal states, and
@@ -133,6 +134,73 @@ def center_score(game, player):
     y, x = game.get_player_location(player)
     return float((h - y)**2 + (w - x)**2)
 
+def custom_score_1(game, player):
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+    
+    move_score = len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player)))
+#    distance_score = distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player)))
+    path_score = path_count(game, game.get_player_location(player), game.get_player_location(game.get_opponent(player)))  
+    
+    if not is_same_color(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
+        path_score = - path_score
+#        
+    return move_score + path_score
+#    return 0.
+  
+def is_same_color(square_1, square_2):
+    return is_dark_square(square_1) == is_dark_square(square_2)
+
+def is_dark_square(square):
+    return (square[0] + square[1]) % 2     
+
+    #    current_square_player = game.get_player_location(player)
+#    current_square_opponent = game.get_player_location(game.get_opponent(player))
+
+def distance(square_1, square_2):
+    row_1, col_1 = square_1
+    row_2, col_2 = square_2
+    return math.sqrt(float((row_2 - row_1)**2 + (col_2 - col_1)**2))
+
+def path_count(board, square_1, square_2):
+    visited = set(get_moves(board, square_1))
+    frontier = list(visited)
+    near_square_2 = set(get_moves(board, square_2))
+    
+    count = 0
+    while True:
+        new_frontier = []
+        for square in frontier:
+            if square in near_square_2:
+                count += 1
+                if count >= 4:
+                    return count
+            new_frontier.extend(get_moves(board, square))
+        
+#        print('count: {}, frontier: {}'.format(count, frontier))
+        frontier = [x for x in new_frontier if x not in visited]
+        visited |= set(frontier)
+        if not frontier:
+            break
+        
+    return count
+
+def get_moves(board, square):
+    """Generate the list of possible moves for an L-shaped motion (like a
+    knight in chess).
+    """
+    if square == isolation.Board.NOT_MOVED:
+        return board.get_blank_spaces()
+
+    r, c = square
+    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+    valid_moves = [(r + dr, c + dc) for dr, dc in directions
+                   if board.move_is_legal((r + dr, c + dc))]
+    
+#    print('valid moves from ' + str(loc) + ': ' + str(valid_moves))
+    return valid_moves    
 
 class RandomPlayer():
     """Player that chooses a move randomly."""
@@ -258,10 +326,10 @@ if __name__ == "__main__":
 
     # create an isolation board (by default 7x7)
 #    player1 = opening_player.OpeningPlayer()
-    player1 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
+    player2 = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_1)
 #    player2 = game_agent.MinimaxPlayer()
     #player2 = GreedyPlayer()
-    player2 = game_agent.AlphaBetaPlayer()
+    player1 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
 #    player2 = monte_carlo_player.MonteCarloPlayer()
     game = Board(player1, player2)
 

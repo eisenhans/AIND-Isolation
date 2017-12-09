@@ -19,7 +19,7 @@ from collections import namedtuple
 
 from isolation import Board
 from sample_players import (RandomPlayer, open_move_score,
-                            improved_score, center_score)
+                            improved_score, center_score, custom_score_1)
 from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
                         custom_score_2, custom_score_3)
 from monte_carlo_player import MonteCarloPlayer
@@ -133,7 +133,8 @@ def main():
     # starting position against the same adversaries in the tournament
     test_agents = [
 #        Agent(MonteCarloPlayer(), "MonteCarlo"),
-        Agent(OpeningPlayer(), "Opening"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_1), "AB_Custom_1")
+#        Agent(AlphaBetaPlayer(), "AB_Default (Improved)")
 #        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
 #        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
 #        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
@@ -147,8 +148,8 @@ def main():
 #        Agent(MinimaxPlayer(score_fn=center_score), "MM_Center"),
 #        Agent(MinimaxPlayer(score_fn=improved_score), "MM_Improved"),
         Agent(AlphaBetaPlayer(score_fn=open_move_score), "AB_Open"),
-#        Agent(AlphaBetaPlayer(score_fn=center_score), "AB_Center"),
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
+#        Agent(AlphaBetaPlayer(score_fn=center_score), "AB_Center"),
     ]
 
     print(DESCRIPTION)

@@ -57,10 +57,112 @@ def custom_score_1(game, player):
     if game.is_loser(player):
         return float('-inf')
     
-    player_moves = game.get_legal_moves(player)
-    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    return len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player)))
     
-    return 2 * len(player_moves) - len(opponent_moves)
+#    print('calculating custom score for player {}'.format(player))
+    
+#    current_square_player = game.get_player_location(player)
+#    current_square_opponent = game.get_player_location(game.get_opponent(player))
+#    
+#    player_moves = len(game.get_legal_moves(player))
+#    opponent_moves = len(game.get_legal_moves(game.get_opponent(player)))
+#    
+#    move_score = player_moves - opponent_moves
+#    
+#    move_score = player_moves / (player_moves + opponent_moves)
+#    path_score = path_count(game, current_square_player, current_square_opponent) / 4
+#    path_score = distance(current_square_player, current_square_opponent) / 72
+#    if not is_same_color(current_square_player, current_square_opponent):
+#        path_score = 1 - path_score
+    
+#    print('score move + path = sum: {} + {} = {}'.format(move_score, path_score, move_score + path_score))
+#    return move_score #+ path_score
+    
+#    return 2 * len(player_moves) - len(opponent_moves)
+
+def distance(square_1, square_2):
+    row_1, col_1 = square_1
+    row_2, col_2 = square_2
+    return float((row_2 - row_1)**2 + (col_2 - col_1)**2)
+    
+
+def path_count(board, square_1, square_2):
+    visited = set(get_moves(board, square_1))
+    frontier = list(visited)
+    near_square_2 = set(get_moves(board, square_2))
+    
+    count = 0
+    while True:
+        new_frontier = []
+        for square in frontier:
+            if square in near_square_2:
+                count += 1
+                if count >= 4:
+                    return count
+            new_frontier.extend(get_moves(board, square))
+        
+#        print('count: {}, frontier: {}'.format(count, frontier))
+        frontier = [x for x in new_frontier if x not in visited]
+        visited |= set(frontier)
+        if not frontier:
+            break
+        
+    return count
+
+def player_distance_score(board, player):
+    current_square_player = board.get_player_location(player)
+    current_square_opponent = board.get_player_location(board.get_opponent(player))
+    same_color = is_same_color(current_square_player, current_square_opponent)
+    
+def distance(board, square_1, square_2):
+    if is_distance_1(square_1, square_2):
+        return 1
+    
+    squares_1 = {square_1}
+    squares_2 = {square_2}
+    
+    for count in range(1, board.width * board.height):
+        if count % 2:
+            squares_1, increased = add_distance_1_squares(board, squares_1)
+            if not increased:
+                return -1
+        else:
+            squares_2, increased = add_distance_1_squares(board, squares_2)
+            if not increased:
+                return -1
+        
+#        print('count: {}, squares_1: {}, squares_2: {}'.format(count, squares_1, squares_2))
+        
+        if squares_1.intersection(squares_2):
+#            print('intersection found: {}, returning {}'.format(squares_1.intersection(squares_2), count))
+            return count
+    
+    raise RuntimeError('could not calculate distance from ' + str(square_1) + ' to ' + str(square_2))
+
+def add_distance_1_squares(board, square_set):
+    current_size = len(square_set)
+    new_square_set = set(square_set)
+    for square in square_set:
+        new_square_set.update(get_moves(board, square))
+#        print('added squares: {} -> {}'.format(square_set, new_square_set))
+        
+    increased = len(new_square_set) > current_size
+    return new_square_set, increased
+
+def is_distance_1(square_1, square_2):
+    row, col = square_1
+    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+    for row_dir, col_dir in directions:
+        if (row + row_dir, col + col_dir) == square_2:
+            return True
+        
+    return False
+    
+def is_same_color(square_1, square_2):
+    return is_dark_square(square_1) == is_dark_square(square_2)
+
+def is_dark_square(square):
+    return (square[0] + square[1]) % 2    
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -112,18 +214,17 @@ def visit_squares(game, square, visited, depth):
     for next_square in new_squares:
         visit_squares(game, next_square, visited, depth - 1)
      
-def get_moves(game, loc):
+def get_moves(board, square):
     """Generate the list of possible moves for an L-shaped motion (like a
     knight in chess).
     """
-    if loc == isolation.Board.NOT_MOVED:
-        return game.get_blank_spaces()
+    if square == isolation.Board.NOT_MOVED:
+        return board.get_blank_spaces()
 
-    r, c = loc
-    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2),
-                  (1, -2), (1, 2), (2, -1), (2, 1)]
+    r, c = square
+    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
     valid_moves = [(r + dr, c + dc) for dr, dc in directions
-                   if game.move_is_legal((r + dr, c + dc))]
+                   if board.move_is_legal((r + dr, c + dc))]
     
 #    print('valid moves from ' + str(loc) + ': ' + str(valid_moves))
     return valid_moves        
@@ -379,6 +480,10 @@ class AlphaBetaPlayer(IsolationPlayer):
 #        self.time_left = time_left
         # TODO: finish this function!
 #        print('finding move for player {}'.format(game.active_player))
+        current_square_player = game.get_player_location(game.active_player)
+        current_square_opponent = game.get_player_location(game.inactive_player)
+#        print('paths from player 1 to player 2 after move {}: {}'.format(game.move_count,
+#              path_count(game, current_square_player, current_square_opponent)))
         
         best_path = []
         max_depth = len(game.get_blank_spaces())
@@ -399,6 +504,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 #            print('caught search timeout')
             pass  # Handle any actions required after timeout as needed
 
+#        print('depth reached by player {}: {}'.format(game.active_player, depth))
         # Return the best move from the last completed search iteration
         return best_path[0] if best_path else (-1, -1)    
 

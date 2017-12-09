@@ -19,14 +19,37 @@ class IsolationTest(unittest.TestCase):
         reload(game_agent)
         self.player1 = "Player1"
         self.player2 = "Player2"
-        self.game = isolation.Board(self.player1, self.player2)
-        self.game.apply_move((4, 4))
-        self.game.apply_move((0, 2))
+        self.board = isolation.Board(self.player1, self.player2)
+        self.board.apply_move((4, 4))
+        self.board.apply_move((0, 2))
         
     def create_clock(self, time_limit = 150):
         time_millis = lambda: 1000 * timeit.default_timer()
         start = time_millis()
-        return lambda : start + time_limit - time_millis()        
+        return lambda : start + time_limit - time_millis()
+    
+    def test_is_distance_1(self):
+        self.assertTrue(game_agent.is_distance_1((3, 3), (4, 5)))
+        self.assertTrue(game_agent.is_distance_1((0, 0), (1, 2)))
+        
+        self.assertFalse(game_agent.is_distance_1((3, 3), (5, 5)))
+        self.assertFalse(game_agent.is_distance_1((0, 0), (1, 1)))
+        
+    def test_distance(self):
+        self.assertEqual(1, game_agent.distance(self.board, (0, 2), (2, 3)))
+        self.assertEqual(2, game_agent.distance(self.board, (4, 4), (0, 2)))
+        self.assertEqual(4, game_agent.distance(self.board, (2, 3), (0, 5)))
+        
+        self.board.apply_move((2, 1))
+        self.board.apply_move((3, 1))
+        self.board.apply_move((2, 2))
+        self.board.apply_move((2, 3))
+        self.board.apply_move((1, 4))
+        
+        self.assertEqual(-1, game_agent.distance(self.board, (4, 4), (0, 2)))
+        
+    def test_path_count(self):
+        self.assertEqual(16, game_agent.path_count(self.board, (4, 4), (0, 2)))
         
 #    def test_minimax_depth_1(self):
 #        player = game_agent.MinimaxPlayer()
