@@ -25,7 +25,7 @@ from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
 from monte_carlo_player import MonteCarloPlayer
 from opening_player import OpeningPlayer
 
-NUM_MATCHES = 5  # number of matches against each opponent
+NUM_MATCHES = 20  # number of matches against each opponent
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
@@ -133,7 +133,7 @@ def main():
     # starting position against the same adversaries in the tournament
     test_agents = [
 #        Agent(MonteCarloPlayer(), "MonteCarlo"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_1), "AB_Custom_1")
+        Agent(OpeningPlayer(), "OpeningPlayer")
 #        Agent(AlphaBetaPlayer(), "AB_Default (Improved)")
 #        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
 #        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),

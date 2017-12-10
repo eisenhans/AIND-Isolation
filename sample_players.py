@@ -8,6 +8,7 @@ own agent and example heuristic functions.
 
 from random import randint
 import game_agent
+import opening_player
 import math
 import isolation
 
@@ -326,10 +327,10 @@ if __name__ == "__main__":
 
     # create an isolation board (by default 7x7)
 #    player1 = opening_player.OpeningPlayer()
-    player2 = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_1)
+    player1 = opening_player.OpeningPlayer()
 #    player2 = game_agent.MinimaxPlayer()
-    #player2 = GreedyPlayer()
-    player1 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
+#    player2 = HumanPlayer()
+    player2 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
 #    player2 = monte_carlo_player.MonteCarloPlayer()
     game = Board(player1, player2)
 
