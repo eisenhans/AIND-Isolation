@@ -1,5 +1,11 @@
 import game_agent
 import alphabeta_improved
+import isolation
+from copy import copy
+
+class PlayoutException(Exception):
+    """Subclass base exception for code clarity. """
+    pass
 
 class MixedPlayer():
     """Player that chooses a move according to user's input."""
@@ -38,7 +44,30 @@ class MixedPlayer():
             legal moves
         """
         if self.autoplay:
-            return self.autoplayer.get_move(game, time_left)
+            wins = {self.autoplayer: 0, game.inactive_player: 0}
+            playouts = 10
+            if game.move_count % 2:
+                player_1 = game.inactive_player
+                player_2 = self.autoplayer
+            else:
+                player_1 = self.autoplayer
+                player_2 = game.inactive_player
+            
+            for count in range(0, playouts):
+                g = isolation.Board(player_1, player_2)
+                g._board_state = copy(game._board_state)
+                g.move_history = game.move_history
+                winner, move_history, termination = g.play()
+                if winner == player_2:
+                    print('unexpected result in playout {}: {} wins\n{}\n{}'.format(count, winner, g.to_string(), move_history))
+                    
+                wins[winner] += 1
+                
+            print('result of {} playouts: {} - {}: {}:{}'.format(playouts, player_1, player_2, wins[player_1], wins[player_2]))
+            
+            raise(PlayoutException())
+                
+#            return None
 #            return self.autoplayer.get_move(game, time_left)
         
         legal_moves = game.get_legal_moves()

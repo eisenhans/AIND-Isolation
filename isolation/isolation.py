@@ -51,6 +51,7 @@ class Board(object):
         self._board_state = [Board.BLANK] * (width * height + 3)
         self._board_state[-1] = Board.NOT_MOVED
         self._board_state[-2] = Board.NOT_MOVED
+        self.move_history = []
 
     def hash(self):
         return str(self._board_state).__hash__()
@@ -316,9 +317,9 @@ class Board(object):
             move history, and a string indicating the reason for losing
             (e.g., timeout or invalid move).
         """
-        move_history = []
-        move_history.append(list(self.get_player_location(self._active_player)))
-        move_history.append(list(self.get_player_location(self._inactive_player)))
+        self.move_history = []
+        self.move_history.append(list(self.get_player_location(self._active_player)))
+        self.move_history.append(list(self.get_player_location(self._inactive_player)))
 
         time_millis = lambda: 1000 * timeit.default_timer()
 
@@ -336,14 +337,14 @@ class Board(object):
                 curr_move = Board.NOT_MOVED
 
             if move_end < 0:
-                return self._inactive_player, move_history, "timeout"
+                return self._inactive_player, self.move_history, "timeout"
 
             if curr_move not in legal_player_moves:
                 if len(legal_player_moves) > 0:
-                    return self._inactive_player, move_history, "forfeit"
-                return self._inactive_player, move_history, "illegal move"
+                    return self._inactive_player, self.move_history, "forfeit"
+                return self._inactive_player, self.move_history, "illegal move"
 
-            move_history.append(list(curr_move))
+            self.move_history.append(list(curr_move))
 
             self.apply_move(curr_move)
             

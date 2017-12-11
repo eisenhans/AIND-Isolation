@@ -336,22 +336,26 @@ def play_match(player_1, player_2, rounds):
     for round in range(rounds):
         game = Board(player_1, player_2)
         
-#        game.apply_moves([(1,0), (2,3), (2,2), (4,4)])
+#        game.apply_moves([(3, 5), (4, 0), (4, 3), (2, 1), (2, 2), (4, 2), (4, 1), (6, 3), (3, 3), (5, 1), (5, 2), (3, 2), (3, 1), (1, 3)])
+        game.apply_moves([(3, 5), (4, 0)])
         
-        move_1 = random.choice(game.get_legal_moves())
-        game.apply_move(move_1)
-        move_2 = random.choice(game.get_legal_moves())
         
-        while is_same_color(move_1, move_2):
-            move_2 = random.choice(game.get_legal_moves())
-            
-        game.apply_move(move_2)
+#        [(4, 1), (1, 4), (3, 3), (2, 2), (2, 1), (0, 3), (1, 3), (1, 1), (3, 2), (3, 0), (4, 0), (5, 1), (5, 2), (6, 3), (4, 4), (5, 5)] 
+        
+#        move_1 = random.choice(game.get_legal_moves())
+#        game.apply_move(move_1)
+#        move_2 = random.choice(game.get_legal_moves())
 #        
+#        while not is_same_color(move_1, move_2):
+#            move_2 = random.choice(game.get_legal_moves())
+#            
+#        game.apply_move(move_2)
+     
         winner, move_history, termination = game.play(time_limit=300000)
         wins[winner] += 1
         
 #        if winner != player_1:
-#        print('player 2 ({}) won unexpectedly:\n{}\n{}\n'.format(winner, game.to_string(), move_history))
+#            print('player 2 ({}) won unexpectedly:\n{}\n{}\n'.format(winner, game.to_string(), move_history))
         print('winner: {}\n{}\n{}\n'.format(winner, game.to_string(), move_history))
     
         if termination == "timeout":
@@ -379,7 +383,7 @@ if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
-#    player_2 = game_agent.AlphaBetaPlayer()
+#    player_1 = game_agent.AlphaBetaPlayer()
 #    player_1 = opening_player.OpeningPlayer()
     player_2 = mixed_player.MixedPlayer()
 #    player_1 = alphabeta_improved.AdvantageAwareAlphaBetaPlayer()
@@ -388,4 +392,8 @@ if __name__ == "__main__":
     player_1 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
 #    player2 = monte_carlo_player.MonteCarloPlayer()
     
-    play_match(player_1, player_2, 1)
+    try:
+        play_match(player_1, player_2, 1)
+        
+    except mixed_player.PlayoutException:
+        pass

@@ -2,6 +2,7 @@
 from random import randint
 import timeit
 import math
+import sys
 import game_agent
 import sample_players
 import isolation
@@ -13,17 +14,51 @@ class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
     pass
 
+def no_border_filter(board, squares):
+    return [square for square in squares if not is_border(board, square)]
+
+def is_border(board, square):
+    row, col = square
+    return row in [0, board.height - 1] or col in [0, board.width - 1]
+
+def get_distance(square_1, square_2):
+    row_1, col_1 = square_1
+    row_2, col_2 = square_2
+    return math.sqrt(float((row_2 - row_1)**2 + (col_2 - col_1)**2))
+
+def get_moves(board, square):
+    """Generate the list of possible moves for an L-shaped motion (like a
+    knight in chess).
+    """
+    r, c = square
+    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+    valid_moves = [(r + dr, c + dc) for dr, dc in directions
+                   if board.move_is_legal((r + dr, c + dc))]
+    
+#    print('valid moves from ' + str(loc) + ': ' + str(valid_moves))
+    return valid_moves
+
 class OpeningPlayer(game_agent.IsolationPlayer):
     
-#    visit_square_lists_same_color = [[(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (3, 3)],
-#                      [(1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5), (3, 3), (3, 4), (3, 5)],
-#                      [(3, 1), (3, 2), (3, 3), (4, 1), (4, 2), (4, 3), (5, 1), (5, 2), (5, 3)],
-#                      [(3, 3), (3, 4), (3, 5), (4, 3), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)]]
+#    visit_square_sets_offensive_strategy = [{(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (3, 3)},
+#                  {(1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5), (3, 3), (3, 4), (3, 5)},
+#                  {(3, 1), (3, 2), (3, 3), (4, 1), (4, 2), (4, 3), (5, 1), (5, 2), (5, 3)},
+#                  {(3, 3), (3, 4), (3, 5), (4, 3), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)}]
     
-    visit_square_lists_same_color = [[(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1)],
-                  [(1, 3), (1, 4), (1, 5), (2, 4), (2, 5), (3, 5)],
-                  [(3, 1), (4, 1), (4, 2), (5, 1), (5, 2), (5, 3)],
-                  [(3, 5), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)]]
+    visit_square_sets_offensive_strategy = [{(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1)},
+                  {(1, 3), (1, 4), (1, 5), (2, 4), (2, 5), (3, 5)},
+                  {(3, 1), (4, 1), (4, 2), (5, 1), (5, 2), (5, 3)},
+                  {(3, 5), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)}]
+    
+#    visit_square_sets_offensive_strategy = [{(1, 1), (1, 2), (2, 1)},
+#              {(1, 4), (1, 5), (2, 5)},
+#              {(4, 1), (5, 1), (5, 2)},
+#              {(4, 5), (5, 4), (5, 5)}]
+    
+#    visit_square_sets_offensive_strategy = [{(1, 1)},
+#                  {(1, 5)},
+#                  {(5, 1)},
+#                  {(5, 5)}]    
     
 #    visit_square_lists_same_color = [[(1, 1), (1, 2), (2, 1), (2, 2)],
 #                  [(1, 4), (1, 5), (2, 4), (2, 5)],
@@ -54,7 +89,7 @@ class OpeningPlayer(game_agent.IsolationPlayer):
 #                  [(2, 4), (2, 5), (3, 4), (3, 5), (4, 4), (4, 5), (5, 5)]]  
     
     # if different colors
-    visit_square_lists_different_color = [[(2, 3), (4, 3), (3, 2), (3, 4), (3, 3)]] 
+    visit_square_set_defensive_strategy = {(2, 3), (3, 2), (3, 3), (3, 4), (4, 3)}
     
 #    visit_square_lists = [[(1, 1), (2, 3), (1, 5), (3, 4), (5, 5), (4, 3), (5, 1), (3, 2)]]   
     
@@ -74,43 +109,89 @@ class OpeningPlayer(game_agent.IsolationPlayer):
         
         self.time_left = time_left
         
-        if board.move_count <= 3:
-            self.squares_to_visit = self.find_squares_to_visit(board)
-#            print('will try to visit these squares: {}'.format(self.squares_to_visit))
-            
-        if self.squares_to_visit:
-            visit = self.squares_to_visit.copy()
-            move = self.find_visiting_move(board)
-            current_square_player = board.get_player_location(board.active_player)
-#            print('tried to find a move from {} to one of the squares {}, result: {}'.format(current_square_player, visit, move))
-            if move:
-                return move
-            
-#        print('opening finished - AlphabetaPlayer is playing')
-        return self.alphabeta_player.get_move(board, time_left)
-        
-    def find_squares_to_visit(self, board):
         current_square_player = board.get_player_location(board.active_player)
         current_square_opponent = board.get_player_location(board.inactive_player)
-        same_color = self.is_same_color(current_square_player, current_square_opponent)
+        advantage = game_agent.is_same_color(current_square_player, current_square_opponent)
         
-        if not same_color:
-            squares = list(set(OpeningPlayer.visit_square_lists_different_color[0]) & set(board.get_blank_spaces()))
-            print('bad situation - trying to visit these squares: {}'.format(squares))
-            return squares
-#        print('current square player/opponent: {}/{}, same color: {}'.format(current_square_player, current_square_opponent, same_color))
+        if advantage:
+            return self.get_move_offensive_strategy(board, time_left)
         
-        squares = self.find_square_list_same_color_with(current_square_player)
-        if not squares:
-            for move in board.get_legal_moves():
-                squares = self.find_square_list_same_color_with(move)
-                if squares:
-                    break
+        return self.get_move_defensive_strategy(board, time_left)
+
+
+    def get_move_offensive_strategy(self, board, time_left):
+        if board.move_count <= 7:
+            return self.move_towards_opponent(board)
         
-        squares = list(set(squares) & set(board.get_blank_spaces()))
-        print('good situation - trying to visit these squares: {}'.format(squares))
+        if self.squares_to_visit == None:
+            self.squares_to_visit = self.find_squares_to_visit_offensive_strategy(board)
         
-        return squares
+        if board.move_count <= 11:
+            self.squares_to_visit = self.squares_to_visit & set(board.get_blank_spaces())
+            
+            moves = no_border_filter(board, board.get_legal_moves())
+            if moves:
+                visiting_moves = list(set(moves) & self.squares_to_visit)
+                if visiting_moves:
+                    # choose a move from where you can visit another square from the target set in the next move
+                    return self.find_square_close_to(board, self.squares_to_visit, visiting_moves)
+                
+                # choose a move from where you can visit a square from the target set in the next move
+                return self.find_square_close_to(board, self.squares_to_visit, moves)
+                    
+        return self.alphabeta_player.get_move(board, time_left)
+     
+    def get_move_defensive_strategy(self, board, time_left):
+        return self.alphabeta_player.get_move(board, time_left)
+#        if board.move_count <= 3:
+#            self.squares_to_visit = self.find_squares_to_visit_defensive_strategy(board)
+        
+    def find_square_close_to(self, board, square_set, possible_squares):
+        closest_square = None
+        max_squares = -1
+        for square in possible_squares:
+            reachable = len(set(get_moves(board, square)) & square_set)
+            if reachable > max_squares:
+                max_squares = reachable
+                closest_square = square
+                
+        return closest_square
+    
+    def move_towards_opponent(self, board, avoid_squares = []):
+        opponent_square = board.get_player_location(board.inactive_player)
+        
+        chosen_move = None
+        smallest_distance = float('inf')
+        for move in board.get_legal_moves():
+            if is_border(board, move) or move in avoid_squares:
+                continue
+            distance = get_distance(move, opponent_square)
+            if distance < smallest_distance:
+                smallest_distance = distance
+                chosen_move = move
+                
+        return chosen_move
+    
+    def find_squares_to_visit_offensive_strategy(self, board):
+#        current_square_player = board.get_player_location(board.active_player)
+#        current_square_opponent = board.get_player_location(board.inactive_player)
+#        same_color = self.is_same_color(current_square_player, current_square_opponent)
+        
+        empty_squares = set(board.get_blank_spaces())
+        
+        min_square_set = None
+        min_count = sys.maxsize
+        for square_set in self.visit_square_sets_offensive_strategy:
+            unvisited = square_set & empty_squares
+            if len(unvisited) < min_count:
+                min_count = len(unvisited)
+                min_square_set = unvisited
+        
+        return min_square_set
+ 
+    def find_squares_to_visit_defensive_strategy(self, board): 
+        return self.visit_square_set_defensive_strategy & set(board.get_blank_spaces())
+        
     
     def is_same_color(self, square_1, square_2):
         return self.is_dark_square(square_1) == self.is_dark_square(square_2)

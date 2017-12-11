@@ -134,7 +134,8 @@ def main():
     # starting position against the same adversaries in the tournament
     test_agents = [
 #        Agent(MonteCarloPlayer(), "MonteCarlo"),
-        Agent(AdvantageAwareAlphaBetaPlayer(), "AB_aa")
+        Agent(AdvantageAwareAlphaBetaPlayer(), "AB_aa"),
+        Agent(OpeningPlayer(), "Opening")
 #        Agent(AlphaBetaPlayer(), "AB_Default (Improved)")
 #        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
 #        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
