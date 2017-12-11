@@ -190,6 +190,10 @@ class Board(object):
             player = self.active_player
         return self.__get_moves(self.get_player_location(player))
 
+    def apply_moves(self, moves):
+        for move in moves:
+            self.apply_move(move)
+
     def apply_move(self, move):
         """Move the active player to a specified location.
 

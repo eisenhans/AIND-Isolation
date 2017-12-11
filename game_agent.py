@@ -51,13 +51,25 @@ def custom_score(game, player):
     
     return len(player_moves) - len(opponent_moves)
 
-def custom_score_1(game, player):
+def custom_score_advantage_aware(game, player):
     if game.is_winner(player):
         return float('inf')
     if game.is_loser(player):
         return float('-inf')
     
-    return len(game.get_legal_moves(player)) - len(game.get_legal_moves(game.get_opponent(player)))
+    player_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    common_moves = set(player_moves) & set(opponent_moves)
+    
+    same_color = is_same_color(game.get_player_location(player), game.get_player_location(game.get_opponent(player)))
+    
+    common_score = 2 * len(common_moves)
+    if not same_color:
+        common_score = - common_score
+    
+    score = len(player_moves) - len(opponent_moves) + common_score
+#    print('score: player - opp + common = {} - {} + {} = {}'.format(len(player_moves), len(opponent_moves), common_score, score))
+    return score
     
 #    print('calculating custom score for player {}'.format(player))
     
@@ -633,13 +645,3 @@ class AlphaBetaPlayer(IsolationPlayer):
     
     def __str__(self):
         return type(self).__name__ + '|' + str(self.score.__name__)
-    
-class LazyAlphaBetaPlayer(AlphaBetaPlayer):
-    def get_move(self, game, time_left):
-        if len(game.get_blank_spaces()) >= 32:
-            legal_moves = game.get_legal_moves()
-            if not legal_moves:
-                return (-1, -1)
-            return legal_moves[random.randint(0, len(legal_moves) - 1)]
-        
-        return AlphaBetaPlayer.get_move(self, game, time_left)

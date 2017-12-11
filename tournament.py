@@ -21,9 +21,10 @@ from isolation import Board
 from sample_players import (RandomPlayer, open_move_score,
                             improved_score, center_score, custom_score_1)
 from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
-                        custom_score_2, custom_score_3)
+                        custom_score_advantage_aware, custom_score_2, custom_score_3)
 from monte_carlo_player import MonteCarloPlayer
 from opening_player import OpeningPlayer
+from alphabeta_improved import AdvantageAwareAlphaBetaPlayer
 
 NUM_MATCHES = 20  # number of matches against each opponent
 TIME_LIMIT = 150  # number of milliseconds before timeout
@@ -133,7 +134,7 @@ def main():
     # starting position against the same adversaries in the tournament
     test_agents = [
 #        Agent(MonteCarloPlayer(), "MonteCarlo"),
-        Agent(OpeningPlayer(), "OpeningPlayer")
+        Agent(AdvantageAwareAlphaBetaPlayer(), "AB_aa")
 #        Agent(AlphaBetaPlayer(), "AB_Default (Improved)")
 #        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
 #        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),

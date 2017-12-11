@@ -6,9 +6,11 @@ own agent and example heuristic functions.
     ******************************2******************************************
 """
 
-from random import randint
+import random
 import game_agent
+import alphabeta_improved
 import opening_player
+import mixed_player
 import math
 import isolation
 
@@ -320,122 +322,70 @@ class HumanPlayer():
                 print('Invalid index! Try again.')
 
         return legal_moves[index]
+    
+    def __str__(self):
+        return type(self).__name__
 
+
+def play_match(player_1, player_2, rounds):
+    games = []
+    wins = {player_1: 0, player_2: 0}
+    timeouts = 0
+    forfeits = 0
+    
+    for round in range(rounds):
+        game = Board(player_1, player_2)
+        
+#        game.apply_moves([(1,0), (2,3), (2,2), (4,4)])
+        
+        move_1 = random.choice(game.get_legal_moves())
+        game.apply_move(move_1)
+        move_2 = random.choice(game.get_legal_moves())
+        
+        while is_same_color(move_1, move_2):
+            move_2 = random.choice(game.get_legal_moves())
+            
+        game.apply_move(move_2)
+#        
+        winner, move_history, termination = game.play(time_limit=300000)
+        wins[winner] += 1
+        
+#        if winner != player_1:
+#        print('player 2 ({}) won unexpectedly:\n{}\n{}\n'.format(winner, game.to_string(), move_history))
+        print('winner: {}\n{}\n{}\n'.format(winner, game.to_string(), move_history))
+    
+        if termination == "timeout":
+            timeouts += 1
+        elif termination == "forfeit":
+            forfeits += 1
+            print('\nforfeited game:\n{}\n{}'.format(game.to_string(), move_history))
+            
+    print('Match result {} - {}: {}:{}'.format(player_1, player_2, wins[player_1], wins[player_2]))
+    
+#    game = Board(player_1, player_2)
+#
+#    game.apply_move((2, 3))
+#    game.apply_move((0, 5))
+#    print(game.to_string())
+#
+#    winner, history, outcome = game.play(time_limit=60000)
+#    who = 'Player ' + ('1' if winner == player_1 else '2')
+#    print("\nWinner: {} - {}\nOutcome: {}".format(who, winner, outcome))
+#    print(game.to_string())
+#    print("Move history:\n{!s}".format(history))
+    
 
 if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
-#    player1 = opening_player.OpeningPlayer()
-    player1 = opening_player.OpeningPlayer()
+#    player_2 = game_agent.AlphaBetaPlayer()
+#    player_1 = opening_player.OpeningPlayer()
+    player_2 = mixed_player.MixedPlayer()
+#    player_1 = alphabeta_improved.AdvantageAwareAlphaBetaPlayer()
 #    player2 = game_agent.MinimaxPlayer()
 #    player2 = HumanPlayer()
-    player2 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
+    player_1 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
 #    player2 = monte_carlo_player.MonteCarloPlayer()
-    game = Board(player1, player2)
-
-    # place player 1 on the board at row 2, column 3, then place player 2 on
-    # the board at row 0, column 5; display the resulting board state.  Note
-    # that the .apply_move() method changes the calling object in-place.
-    game.apply_move((2, 3))
-    game.apply_move((0, 5))
-#    game.apply_move((1, 5))
-#    game.apply_move((2, 4))
-#    game.apply_move((3, 4))
-#    game.apply_move((4, 5))
-#    game.apply_move((1, 3))
-#    game.apply_move((6, 4))
-#    game.apply_move((2, 5))
-#    game.apply_move((4, 3))
-#    game.apply_move((3, 3))
-#    game.apply_move((5, 1))
-#    game.apply_move((1, 4))
-#    game.apply_move((6, 3))
-#    game.apply_move((3, 5))
-#    game.apply_move((4, 2))
-#    game.apply_move(())
-#    game.apply_move(())
-#    game.apply_move(())
-#    game.apply_move(())
-#    game.apply_move(())
-#    game.apply_move(())
-#    game.apply_move(())
-#    game.apply_move(())
-#    game.apply_move(())
-#    
-#    [5, 6], [3, 0], [4, 4], [2, 2], [3, 2], [4, 1], [2, 0], [6, 0], [1, 2], [5, 2], [3, 1], [4, 0], [5, 0], [6, 1], [6, 2], [5, 3], [5, 4], [6, 5], [6, 6], [4, 6]]
-   
-#    game.apply_move((4, 4))
-#    game.apply_move((2, 6))
-#    game.apply_move((3, 2))
-#    game.apply_move((1, 4))
-#    game.apply_move((5, 1))
-#    game.apply_move((2, 2))
-#    game.apply_move((4, 3))
-#    game.apply_move((1, 0))
-#    game.apply_move((3, 1))
-#    game.apply_move((0, 2))
-#    game.apply_move((5, 2))
-#    game.apply_move((2, 1))
-#    game.apply_move((3, 3))
-#    game.apply_move((4, 0))
-#    game.apply_move((4, 5))
-#    game.apply_move((6, 1))
-#    game.apply_move((5, 3))
-#    game.apply_move((4, 2))
-#    game.apply_move((3, 4))
-#    game.apply_move((5, 4))
-#    game.apply_move((1, 5))
-#    game.apply_move(())
     
-    
-#    game.apply_move((4, 4))
-#    game.apply_move((2, 6))
-#    game.apply_move((3, 2))
-#    game.apply_move((1, 4))
-#    game.apply_move((2, 4))
-#    game.apply_move((2, 2))
-#    game.apply_move((4, 3))
-#    game.apply_move((0, 1))
-#    game.apply_move((6, 2))
-#    game.apply_move((1, 3))
-#    game.apply_move((4, 1))
-#    game.apply_move((2, 1))
-#    game.apply_move((3, 3))
-#    game.apply_move((4, 2))
-    
-#    game.apply_move((5, 4))
-#    game.apply_move((6, 1))
-#    game.apply_move((6, 6))
-#    game.apply_move((5, 3))
-#    game.apply_move((4, 5))
-#    game.apply_move((3, 4))
-#    game.apply_move((6, 4))
-#    game.apply_move((4, 6))
-#    game.apply_move(())
-    
-#    game.apply_move((2, 2))
-#    game.apply_move((4, 4))
-    print(game.to_string())
-
-    # players take turns moving on the board, so player1 should be next to move
-    assert(player1 == game.active_player)
-
-    # get a list of the legal moves available to the active player
-    print(game.get_legal_moves())
-
-    # get a successor of the current state by making a copy of the board and
-    # applying a move. Notice that this does NOT change the calling object
-    # (unlike .apply_move()).
-    new_game = game.forecast_move((1, 1))
-    assert(new_game.to_string() != game.to_string())
-#    print("\nOld state:\n{}".format(game.to_string()))
-#    print("\nNew state:\n{}".format(new_game.to_string()))
-
-    # play the remainder of the game automatically -- outcome can be "illegal
-    # move", "timeout", or "forfeit"
-    winner, history, outcome = game.play(time_limit=60000)
-    who = 'Player ' + ('1' if winner == player1 else '2')
-    print("\nWinner: {} - {}\nOutcome: {}".format(who, winner, outcome))
-    print(game.to_string())
-    print("Move history:\n{!s}".format(history))
+    play_match(player_1, player_2, 1)

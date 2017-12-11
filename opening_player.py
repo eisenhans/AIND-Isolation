@@ -15,15 +15,15 @@ class SearchTimeout(Exception):
 
 class OpeningPlayer(game_agent.IsolationPlayer):
     
-    visit_square_lists_same_color = [[(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (3, 3)],
-                      [(1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5), (3, 3), (3, 4), (3, 5)],
-                      [(3, 1), (3, 2), (3, 3), (4, 1), (4, 2), (4, 3), (5, 1), (5, 2), (5, 3)],
-                      [(3, 3), (3, 4), (3, 5), (4, 3), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)]]
+#    visit_square_lists_same_color = [[(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (3, 3)],
+#                      [(1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5), (3, 3), (3, 4), (3, 5)],
+#                      [(3, 1), (3, 2), (3, 3), (4, 1), (4, 2), (4, 3), (5, 1), (5, 2), (5, 3)],
+#                      [(3, 3), (3, 4), (3, 5), (4, 3), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)]]
     
-#    visit_square_lists_same_color = [[(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1)],
-#                  [(1, 3), (1, 4), (1, 5), (2, 4), (2, 5), (3, 5)],
-#                  [(3, 1), (4, 1), (4, 2), (5, 1), (5, 2), (5, 3)],
-#                  [(3, 5), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)]]
+    visit_square_lists_same_color = [[(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1)],
+                  [(1, 3), (1, 4), (1, 5), (2, 4), (2, 5), (3, 5)],
+                  [(3, 1), (4, 1), (4, 2), (5, 1), (5, 2), (5, 3)],
+                  [(3, 5), (4, 4), (4, 5), (5, 3), (5, 4), (5, 5)]]
     
 #    visit_square_lists_same_color = [[(1, 1), (1, 2), (2, 1), (2, 2)],
 #                  [(1, 4), (1, 5), (2, 4), (2, 5)],
@@ -74,7 +74,7 @@ class OpeningPlayer(game_agent.IsolationPlayer):
         
         self.time_left = time_left
         
-        if self.squares_to_visit == None:
+        if board.move_count <= 3:
             self.squares_to_visit = self.find_squares_to_visit(board)
 #            print('will try to visit these squares: {}'.format(self.squares_to_visit))
             
@@ -95,7 +95,9 @@ class OpeningPlayer(game_agent.IsolationPlayer):
         same_color = self.is_same_color(current_square_player, current_square_opponent)
         
         if not same_color:
-            return list(set(OpeningPlayer.visit_square_lists_different_color[0]) & set(board.get_blank_spaces()))
+            squares = list(set(OpeningPlayer.visit_square_lists_different_color[0]) & set(board.get_blank_spaces()))
+            print('bad situation - trying to visit these squares: {}'.format(squares))
+            return squares
 #        print('current square player/opponent: {}/{}, same color: {}'.format(current_square_player, current_square_opponent, same_color))
         
         squares = self.find_square_list_same_color_with(current_square_player)
@@ -105,7 +107,10 @@ class OpeningPlayer(game_agent.IsolationPlayer):
                 if squares:
                     break
         
-        return list(set(squares) & set(board.get_blank_spaces()))
+        squares = list(set(squares) & set(board.get_blank_spaces()))
+        print('good situation - trying to visit these squares: {}'.format(squares))
+        
+        return squares
     
     def is_same_color(self, square_1, square_2):
         return self.is_dark_square(square_1) == self.is_dark_square(square_2)
@@ -146,8 +151,8 @@ class OpeningPlayer(game_agent.IsolationPlayer):
         board_after_move = board.forecast_move(move)
         for opp_move in board_after_move.get_legal_moves():
             if board_after_move.forecast_move(opp_move).is_loser(board.active_player):
-                print('move {} -> {} would be a blunder - will not be played!\n{}'.format(
-                        board.get_player_location(board.active_player), move, board))
+                print('move {} -> {} would be a blunder - will not be played!\n{}\n'.format(
+                        board.get_player_location(board.active_player), move, board.to_string()))
                 return True
         
         return False
@@ -185,4 +190,5 @@ class OpeningPlayer(game_agent.IsolationPlayer):
     #    print('valid moves from ' + str(loc) + ': ' + str(valid_moves))
         return valid_moves           
         
-    
+    def __str__(self):
+        return type(self).__name__
