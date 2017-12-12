@@ -20,7 +20,7 @@ from collections import namedtuple
 from isolation import Board
 from sample_players import (RandomPlayer, open_move_score,
                             improved_score, center_score, custom_score_1)
-from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
+from game_agent import (MinimaxPlayer, AlphaBetaPlayer, improved_score,
                         custom_score_advantage_aware, custom_score_2, custom_score_3)
 from monte_carlo_player import MonteCarloPlayer
 from opening_player import OpeningPlayer
@@ -135,7 +135,9 @@ def main():
     test_agents = [
 #        Agent(MonteCarloPlayer(), "MonteCarlo"),
         Agent(AdvantageAwareAlphaBetaPlayer(), "AB_aa"),
-        Agent(OpeningPlayer(), "Opening"),
+        Agent(OpeningPlayer(), "Opening_Both"),
+        Agent(OpeningPlayer(use_defensive_strategy = False), "Opening_Off"),
+        Agent(OpeningPlayer(use_offensive_strategy = False), "Opening_Dev"),
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
 #        Agent(AlphaBetaPlayer(), "AB_Default (Improved)")
 #        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),

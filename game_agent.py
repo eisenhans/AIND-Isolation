@@ -12,7 +12,7 @@ class SearchTimeout(Exception):
     pass
 
 
-def custom_score(game, player):
+def improved_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
@@ -289,7 +289,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+    def __init__(self, search_depth=3, score_fn=improved_score, timeout=10.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None

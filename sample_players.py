@@ -385,16 +385,16 @@ if __name__ == "__main__":
 
     # create an isolation board (by default 7x7)
 #    player_2 = game_agent.AlphaBetaPlayer()
-    player_2 = opening_player.OpeningPlayer()
+    player_1 = opening_player.OpeningPlayer()
 #    player_2 = mixed_player.MixedPlayer()
 #    player_1 = alphabeta_improved.AdvantageAwareAlphaBetaPlayer()
 #    player2 = game_agent.MinimaxPlayer()
 #    player2 = HumanPlayer()
-    player_1 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
+    player_2 = game_agent.AlphaBetaPlayer(score_fn=improved_score)
 #    player2 = monte_carlo_player.MonteCarloPlayer()
     
     try:
-        play_match(player_1, player_2, 10)
+        play_match(player_1, player_2, 1)
         
     except mixed_player.PlayoutException:
         pass
