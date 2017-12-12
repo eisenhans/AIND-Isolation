@@ -211,6 +211,7 @@ class Board(object):
         self._board_state[-3] ^= 1
         self._active_player, self._inactive_player = self._inactive_player, self._active_player
         self.move_count += 1
+        self.move_history.append(list(move))
 
     def is_winner(self, player):
         """ Test whether the specified player has won the game. """
@@ -317,9 +318,8 @@ class Board(object):
             move history, and a string indicating the reason for losing
             (e.g., timeout or invalid move).
         """
-        self.move_history = []
-        self.move_history.append(list(self.get_player_location(self._active_player)))
-        self.move_history.append(list(self.get_player_location(self._inactive_player)))
+#        self.move_history.append(list(self.get_player_location(self._active_player)))
+#        self.move_history.append(list(self.get_player_location(self._inactive_player)))
 
         time_millis = lambda: 1000 * timeit.default_timer()
 
@@ -344,7 +344,7 @@ class Board(object):
                     return self._inactive_player, self.move_history, "forfeit"
                 return self._inactive_player, self.move_history, "illegal move"
 
-            self.move_history.append(list(curr_move))
+#            self.move_history.append(list(curr_move))
 
             self.apply_move(curr_move)
             

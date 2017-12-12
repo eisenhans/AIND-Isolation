@@ -337,26 +337,27 @@ def play_match(player_1, player_2, rounds):
         game = Board(player_1, player_2)
         
 #        game.apply_moves([(3, 5), (4, 0), (4, 3), (2, 1), (2, 2), (4, 2), (4, 1), (6, 3), (3, 3), (5, 1), (5, 2), (3, 2), (3, 1), (1, 3)])
-        game.apply_moves([(3, 5), (4, 0)])
-        
+#        game.apply_moves([(6, 0), (5, 5), (5, 2), (3, 4), (4, 4), (1, 5), (3, 6), (2, 3), (2, 4), (1, 1), (0, 3), (3, 2), (2, 2)])
+#        history = game.move_history
+#        print('starting game from position after {}'.format(history))
         
 #        [(4, 1), (1, 4), (3, 3), (2, 2), (2, 1), (0, 3), (1, 3), (1, 1), (3, 2), (3, 0), (4, 0), (5, 1), (5, 2), (6, 3), (4, 4), (5, 5)] 
         
-#        move_1 = random.choice(game.get_legal_moves())
-#        game.apply_move(move_1)
-#        move_2 = random.choice(game.get_legal_moves())
-#        
-#        while not is_same_color(move_1, move_2):
-#            move_2 = random.choice(game.get_legal_moves())
-#            
-#        game.apply_move(move_2)
-     
+        move_1 = random.choice(game.get_legal_moves())
+        game.apply_move(move_1)
+        move_2 = random.choice(game.get_legal_moves())
+        
+        while not is_same_color(move_1, move_2):
+            move_2 = random.choice(game.get_legal_moves())
+            
+        game.apply_move(move_2)
+#     
         winner, move_history, termination = game.play(time_limit=300000)
         wins[winner] += 1
         
-#        if winner != player_1:
-#            print('player 2 ({}) won unexpectedly:\n{}\n{}\n'.format(winner, game.to_string(), move_history))
-        print('winner: {}\n{}\n{}\n'.format(winner, game.to_string(), move_history))
+        if winner != player_1:
+            print('player 2 ({}) won unexpectedly:\n{}\n{}\n'.format(winner, game.to_string(), move_history))
+#        print('winner: {}\n{}\n{}\n'.format(winner, game.to_string(), move_history))
     
         if termination == "timeout":
             timeouts += 1
@@ -383,9 +384,9 @@ if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
-#    player_1 = game_agent.AlphaBetaPlayer()
-#    player_1 = opening_player.OpeningPlayer()
-    player_2 = mixed_player.MixedPlayer()
+#    player_2 = game_agent.AlphaBetaPlayer()
+    player_2 = opening_player.OpeningPlayer()
+#    player_2 = mixed_player.MixedPlayer()
 #    player_1 = alphabeta_improved.AdvantageAwareAlphaBetaPlayer()
 #    player2 = game_agent.MinimaxPlayer()
 #    player2 = HumanPlayer()
@@ -393,7 +394,7 @@ if __name__ == "__main__":
 #    player2 = monte_carlo_player.MonteCarloPlayer()
     
     try:
-        play_match(player_1, player_2, 1)
+        play_match(player_1, player_2, 10)
         
     except mixed_player.PlayoutException:
         pass

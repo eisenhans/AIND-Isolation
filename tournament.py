@@ -135,7 +135,8 @@ def main():
     test_agents = [
 #        Agent(MonteCarloPlayer(), "MonteCarlo"),
         Agent(AdvantageAwareAlphaBetaPlayer(), "AB_aa"),
-        Agent(OpeningPlayer(), "Opening")
+        Agent(OpeningPlayer(), "Opening"),
+        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
 #        Agent(AlphaBetaPlayer(), "AB_Default (Improved)")
 #        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
 #        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),

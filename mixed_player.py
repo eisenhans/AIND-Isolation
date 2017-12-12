@@ -52,7 +52,7 @@ class MixedPlayer():
             else:
                 player_1 = self.autoplayer
                 player_2 = game.inactive_player
-            
+                
             for count in range(0, playouts):
                 g = isolation.Board(player_1, player_2)
                 g._board_state = copy(game._board_state)
@@ -63,7 +63,7 @@ class MixedPlayer():
                     
                 wins[winner] += 1
                 
-            print('result of {} playouts: {} - {}: {}:{}'.format(playouts, player_1, player_2, wins[player_1], wins[player_2]))
+            print('result of {} playouts from position after moves\n{}\n{} - {}: {}:{}'.format(playouts, game.move_history, player_1, player_2, wins[player_1], wins[player_2]))
             
             raise(PlayoutException())
                 
