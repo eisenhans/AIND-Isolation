@@ -305,6 +305,9 @@ class MinimaxPlayer(IsolationPlayer):
                 best_move = move
         
         return best_score, best_move
+    
+    def __str__(self):
+        return type(self).__name__ + '|' + str(self.score.__name__)    
 
 class AlphaBetaNoReorderPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using iterative deepening minimax

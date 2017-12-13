@@ -7,9 +7,10 @@ own agent and example heuristic functions.
 """
 
 from random import randint, choice
-from game_agent import (AlphaBetaNoReorderPlayer, AlphaBetaPlayer, is_same_color)
+from game_agent import (AlphaBetaNoReorderPlayer, AlphaBetaPlayer, MinimaxPlayer, is_same_color)
 from mixed_player import MixedPlayer, PlayoutException
 from opening_player import OpeningPlayer
+from monte_carlo_player import MonteCarloPlayer
 
 def null_score(game, player):
     """This heuristic presumes no knowledge for non-terminal states, and
@@ -271,7 +272,8 @@ def play_match(player_1, player_2, rounds):
             
         game.apply_move(move_2)
 #     
-        winner, move_history, termination = game.play(time_limit=300000)
+#        winner, move_history, termination = game.play(time_limit=300000)
+        winner, move_history, termination = game.play()        
         wins[winner] += 1
         
         if winner != player_1:
@@ -290,8 +292,8 @@ if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
-    player_2 = AlphaBetaPlayer()
-    player_1 = MixedPlayer()
+    player_2 = MinimaxPlayer()
+    player_1 = MonteCarloPlayer()
     game = Board(player_1, player_2)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on

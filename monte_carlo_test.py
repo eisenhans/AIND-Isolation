@@ -5,6 +5,7 @@ cases used by the project assistant are not public.
 
 import unittest
 import timeit
+import math
 
 import isolation
 import game_agent
@@ -13,8 +14,7 @@ from monte_carlo_player import MonteCarloNode
 
 from importlib import reload
 
-class IsolationTest(unittest.TestCase):
-    """Unit tests for isolation agents"""
+class MonteCarloTest(unittest.TestCase):
     
     start_position_player_1 = (4, 4)
     start_position_player_2 = (0, 2)
@@ -26,7 +26,7 @@ class IsolationTest(unittest.TestCase):
         self.board = isolation.Board(self.player_1, self.player_2)
         self.board.apply_move(self.start_position_player_1)
         self.board.apply_move(self.start_position_player_2)
-        self.agent = MonteCarloPlayer()
+        self.agent = MonteCarloPlayer(EXPLORATION_PARAM = math.sqrt(2))
         
         root = MonteCarloNode(self.board, None)
         root.score = 11.
@@ -62,37 +62,37 @@ class IsolationTest(unittest.TestCase):
         start = time_millis()
         return lambda : start + time_limit - time_millis()        
         
-#    def test_copy_board(self):
-#        player_1 = 'p1'
-#        player_2 = 'p2'
-#        copy_1 = self.agent.copy_board(self.board, player_1, player_2)
-#        self.assertEqual(2, copy_1.move_count)
-#        self.assertEqual(player_1, copy_1.active_player)
-#        self.assertEqual(player_2, copy_1.inactive_player)
-#        
-#        self.board.apply_move((6, 5))
-#        copy_2 = self.agent.copy_board(self.board, player_1, player_2)
-#        self.assertEquals(3, copy_2.move_count)
-#        self.assertEqual(player_2, copy_2.active_player)
-#        self.assertEqual(player_1, copy_2.inactive_player)
-#        
-#        blank = copy_2.get_blank_spaces()
-#        self.assertFalse((0, 2) in blank)
-#        self.assertFalse((4, 4) in blank)
-#        self.assertFalse((6, 5) in blank)
+    def test_create_playout_board(self):
+        player_1 = 'p1'
+        player_2 = 'p2'
+        copy_1 = self.agent.create_playout_board(self.board, player_1, player_2)
+        self.assertEqual(2, copy_1.move_count)
+        self.assertEqual(player_1, copy_1.active_player)
+        self.assertEqual(player_2, copy_1.inactive_player)
+        
+        self.board.apply_move((6, 5))
+        copy_2 = self.agent.create_playout_board(self.board, player_1, player_2)
+        self.assertEquals(3, copy_2.move_count)
+        self.assertEqual(player_2, copy_2.active_player)
+        self.assertEqual(player_1, copy_2.inactive_player)
+        
+        blank = copy_2.get_blank_spaces()
+        self.assertFalse((0, 2) in blank)
+        self.assertFalse((4, 4) in blank)
+        self.assertFalse((6, 5) in blank)
        
-#    def test_monte_carlo_node(self):
-#        root = MonteCarloNode(self.board, None)
-#        self.assertEqual(self.start_position_player_2, root.get_last_move())
-#        self.assertEqual('path=[(0, 2)], value=0.0/0', '{}'.format(root))
-#        
-#        child = MonteCarloNode(root.board.forecast_move((6, 1)), root)
-#        self.assertEqual((6, 1), child.get_last_move())
-#        self.assertEqual('path=[(0, 2), (6, 1)], value=0.0/0', '{}'.format(child))
-#        
-#        grandchild = MonteCarloNode(child.board.forecast_move((1, 0)), child)
-#        self.assertEqual((1, 0), grandchild.get_last_move())
-#        self.assertEqual('path=[(0, 2), (6, 1), (1, 0)], value=0.0/0', '{}'.format(grandchild))
+    def test_monte_carlo_node(self):
+        root = MonteCarloNode(self.board, None)
+        self.assertEqual(self.start_position_player_2, root.get_last_move())
+        self.assertEqual('path=[(0, 2)], value=0.0/0', '{}'.format(root))
+        
+        child = MonteCarloNode(root.board.forecast_move((6, 1)), root)
+        self.assertEqual((6, 1), child.get_last_move())
+        self.assertEqual('path=[(0, 2), (6, 1)], value=0.0/0', '{}'.format(child))
+        
+        grandchild = MonteCarloNode(child.board.forecast_move((1, 0)), child)
+        self.assertEqual((1, 0), grandchild.get_last_move())
+        self.assertEqual('path=[(0, 2), (6, 1), (1, 0)], value=0.0/0', '{}'.format(grandchild))
                 
         
     def test_monte_carlo_search(self):
@@ -134,15 +134,15 @@ class IsolationTest(unittest.TestCase):
         self.assertEqual(best_child, self.agent.root)
         self.assertEqual(2, len(self.agent.root.children))
         self.assertEqual(6, len(self.agent.frontier))
-#        
-#    def test_get_move(self):
-#        move = self.agent.get_move(self.board, self.create_clock())
-#        self.assertTrue(move in [(2, 5), (2, 3), (3, 2), (3, 6), (5, 2), (6, 39), (5, 6), (6, 3), (6, 5)], 'best move: ' + str(move))
+        
+    def test_get_move(self):
+        move = self.agent.get_move(self.board, self.create_clock())
+        self.assertTrue(move in [(2, 5), (2, 3), (3, 2), (3, 6), (5, 2), (6, 39), (5, 6), (6, 3), (6, 5)], 'best move: ' + str(move))
 
-#    def test_monte_carlo(self):
-#        player = competition_agent.MonteCarloPlayer()
-#        best_move = player.get_move(self.game, self.create_clock())
-#        self.assertTrue(best_move in [(2, 3), (3, 6), (6, 3)], 'best move: ' + str(best_move))
+    def test_monte_carlo(self):
+        player = MonteCarloPlayer()
+        best_move = player.get_move(self.board, self.create_clock())
+        self.assertTrue(best_move in [(2, 3), (5, 2), (3, 2), (3, 6), (5, 2), (5, 6), (6, 3)], 'best move: ' + str(best_move))
 
 if __name__ == '__main__':
     unittest.main()

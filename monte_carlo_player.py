@@ -3,7 +3,6 @@ from random import randint
 import timeit
 import math
 import game_agent
-import sample_players
 import isolation
 from copy import copy
 
@@ -243,17 +242,14 @@ class SearchTimeout(Exception):
 class MonteCarloPlayer(game_agent.IsolationPlayer):
     
     PLAYOUT_MOVE_COUNT = 6
-    EXPLORATION_PARAM = 5#math.sqrt(2)
-#    playout_player_1 = RandomPlayer()
-#    playout_player_2 = RandomPlayer()
-#    playout_player_1 = GreedyPlayer(score_fn = improved_score)
     playout_player_1 = GreedyPlayer()
     playout_player_2 = GreedyPlayer()
     
-    def __init__(self):
+    def __init__(self, EXPLORATION_PARAM = 5):
         self.root = None
         self.frontier = []
         self.TIMER_THRESHOLD = 25.
+        self.EXPLORATION_PARAM = EXPLORATION_PARAM
         super(MonteCarloPlayer, self).__init__()
     
     def update_root(self, new_root):
@@ -422,13 +418,12 @@ class MonteCarloPlayer(game_agent.IsolationPlayer):
     def simulate(self, node):
         playout_board = self.create_playout_board(node.board, self.playout_player_1, self.playout_player_2)
         inactive_player = playout_board.inactive_player
+        
 #        winner, history, outcome, board = playout_board.play_moves(self.PLAYOUT_MOVE_COUNT)
-#        
 #        return tentative_score(board, inactive_player)
         
-        winner, history, outcome, board = playout_board.play()
-        
-        return tentative_score(board, inactive_player)
+        winner, history, outcome = playout_board.play()
+        return 1 if winner == inactive_player else 0
         
     def propagate_back(self, node, score):
         current_node = node
@@ -450,7 +445,10 @@ class MonteCarloPlayer(game_agent.IsolationPlayer):
             playout_board._active_player = player_2
             playout_board._inactive_player = player_1
         
-        return playout_board        
+        return playout_board    
+
+    def __str__(self):
+        return type(self).__name__    
             
 class MonteCarloNode:
     def __init__(self, board, parent = None):
@@ -524,5 +522,3 @@ class PlayoutBoard(isolation.Board):
             
         return None, move_history, "game running", self    
         
-    def __str__(self):
-        return type(self).__name__    
