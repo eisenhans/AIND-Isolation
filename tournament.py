@@ -20,10 +20,12 @@ from collections import namedtuple
 from isolation import Board
 from sample_players import (RandomPlayer, open_move_score,
                             improved_score, center_score)
-from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
+from game_agent import (MinimaxPlayer, AlphaBetaPlayer, AlphaBetaNoReorderPlayer, custom_score,
                         custom_score_2, custom_score_3)
+from opening_player import OpeningPlayer
+from monte_carlo_player import MonteCarloPlayer
 
-NUM_MATCHES = 5  # number of matches against each opponent
+NUM_MATCHES = 10  # number of matches against each opponent
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
@@ -60,13 +62,15 @@ def play_round(cpu_agent, test_agents, win_counts, num_matches):
 
         # play all games and tally the results
         for game in games:
-            winner, _, termination = game.play(time_limit=TIME_LIMIT)
+            winner, move_history, termination = game.play(time_limit=TIME_LIMIT)
             win_counts[winner] += 1
 
             if termination == "timeout":
                 timeout_count += 1
+                print('\nplayer {} lost on time:\n{}\n{}'.format(game.active_player, game.to_string(), move_history))
             elif termination == "forfeit":
                 forfeit_count += 1
+                print('\nplayer {} forfeited game:\n{}\n{}'.format(game.active_player, game.to_string(), move_history))
 
     return timeout_count, forfeit_count
 
@@ -130,19 +134,22 @@ def main():
     # starting position against the same adversaries in the tournament
     test_agents = [
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3")
+        Agent(AlphaBetaNoReorderPlayer(score_fn=improved_score), "AB_NotReordered"),
+        Agent(OpeningPlayer(), "Opening"),
+        Agent(MonteCarloPlayer(), "MonteCarlo"),
+#        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
+#        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
+#        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3")
     ]
 
     # Define a collection of agents to compete against the test agents
     cpu_agents = [
-        Agent(RandomPlayer(), "Random"),
-        Agent(MinimaxPlayer(score_fn=open_move_score), "MM_Open"),
-        Agent(MinimaxPlayer(score_fn=center_score), "MM_Center"),
+#        Agent(RandomPlayer(), "Random"),
+#        Agent(MinimaxPlayer(score_fn=open_move_score), "MM_Open"),
+#        Agent(MinimaxPlayer(score_fn=center_score), "MM_Center"),
         Agent(MinimaxPlayer(score_fn=improved_score), "MM_Improved"),
+#        Agent(AlphaBetaPlayer(score_fn=center_score), "AB_Center"),
         Agent(AlphaBetaPlayer(score_fn=open_move_score), "AB_Open"),
-        Agent(AlphaBetaPlayer(score_fn=center_score), "AB_Center"),
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
     ]
 

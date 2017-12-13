@@ -44,11 +44,15 @@ td {
   color: #333333;
 }
 
-/* black square */
 .black-3c85d.blocked {
+  background-color: #999999;
+  color: #333333;
+}
+/* black square */
+/*.black-3c85d.blocked {
   background-color: #333333;
   color: #999999;
-}
+}*/
 
 /* white square */
 .white-1e1d7 {
