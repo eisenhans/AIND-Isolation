@@ -248,7 +248,7 @@ class MonteCarloPlayer(game_agent.IsolationPlayer):
     def __init__(self, EXPLORATION_PARAM = 5):
         self.root = None
         self.frontier = []
-        self.TIMER_THRESHOLD = 25.
+        self.TIMER_THRESHOLD = 40.
         self.EXPLORATION_PARAM = EXPLORATION_PARAM
         super(MonteCarloPlayer, self).__init__()
     

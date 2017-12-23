@@ -7,9 +7,8 @@ own agent and example heuristic functions.
 """
 
 from random import randint, choice
-from game_agent import (AlphaBetaNoReorderPlayer, AlphaBetaPlayer, MinimaxPlayer, is_same_color)
+from game_agent import (AlphaBetaNoReorderPlayer, AlphaBetaPlayer, MinimaxPlayer, custom_score)
 from mixed_player import MixedPlayer, PlayoutException
-from opening_player import OpeningPlayer
 from monte_carlo_player import MonteCarloPlayer
 
 def null_score(game, player):
@@ -292,8 +291,8 @@ if __name__ == "__main__":
     from isolation import Board
 
     # create an isolation board (by default 7x7)
-    player_2 = MinimaxPlayer()
-    player_1 = MonteCarloPlayer()
+    player_1 = AlphaBetaPlayer(score_fn=custom_score)
+    player_2 = AlphaBetaPlayer(score_fn=improved_score)
     game = Board(player_1, player_2)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on

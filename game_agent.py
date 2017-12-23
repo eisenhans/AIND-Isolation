@@ -38,9 +38,13 @@ def custom_score(game, player):
         return float('inf')
     if game.is_loser(player):
         return float('-inf')
-    
+
     player_moves = game.get_legal_moves(player)
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    
+    if bool(set(player_moves) & set(opponent_moves)):
+        return len(player_moves) - len(opponent_moves) + 3
+    
     return len(player_moves) - len(opponent_moves)
 
 def custom_score_2(game, player):
@@ -60,32 +64,39 @@ def custom_score_2(game, player):
     -------
     float
         The heuristic value of the current game state to the specified player.
-    """    
+    """        
     if game.is_winner(player):
         return float('inf')
     if game.is_loser(player):
         return float('-inf')
-    
+
     player_moves = game.get_legal_moves(player)
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
-    common_moves = set(player_moves) & set(opponent_moves)
     
-    score = len(player_moves) - len(opponent_moves) + 2 * len(common_moves)
-#    print('score: player - opp + common = {} - {} + {} = {}'.format(len(player_moves), len(opponent_moves), common_score, score))
-    return score
-    
-def is_same_color(square_1, square_2):
-    return is_dark_square(square_1) == is_dark_square(square_2)
+    if bool(set(player_moves) & set(opponent_moves)):
+        return len(player_moves) - len(opponent_moves) + 3
 
-def is_dark_square(square):
-    return (square[0] + square[1]) % 2    
+    if is_move_distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
+        return len(player_moves) - len(opponent_moves) - 3
+    
+    return len(player_moves) - len(opponent_moves)
+
+def is_move_distance(square_1, square_2):
+    row_1, col_1 = square_1
+    row_2, col_2 = square_2
+    return (abs(row_1 - row_2) == 1 and abs(col_1 - col_2) == 2) or (abs(row_1 - row_2) == 2 and abs(col_1 - col_2) == 1)
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
+    This implementation is more complex than the others. For each player, the
+    squares that can be reached in the next k moves is counted. (We try k = 3.)
+    The return value is the difference between the number of squares for the
+    current player and the number of squares for his opponent. So for k = 1
+    this heuristic would be the same as improved_score.
+    
+    Result: this turns out to be too slow.
 
     Parameters
     ----------
@@ -107,9 +118,10 @@ def custom_score_3(game, player):
     if game.is_loser(player):
         return float('-inf')
     
+    depth = 3
+
     current_square_player = game.get_player_location(player)
     visited_squares_player = {current_square_player}
-    depth = 5
     visit_squares(game, current_square_player, visited_squares_player, depth)
     
     current_square_opponent = game.get_player_location(game.get_opponent(player))
