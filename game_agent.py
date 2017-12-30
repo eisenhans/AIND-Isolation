@@ -47,7 +47,45 @@ def custom_score(game, player):
     
     return len(player_moves) - len(opponent_moves)
 
-def custom_score_2(game, player):
+def custom_score_plus3(game, player):
+    """Calculate the heuristic value of a game state from the point of view
+    of the given player.
+
+    This should be the best heuristic function for your project submission.
+
+    Note: this function should be called from within a Player instance as
+    `self.score()` -- you should not need to call this function directly.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+
+    player_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    score = len(player_moves) - len(opponent_moves)
+    
+    if bool(set(player_moves) & set(opponent_moves)):
+        return score + 3
+    
+    return score
+
+def custom_score_plus2_5_minus2_5(game, player):
     """An 'advantage-aware custom score function.
 
     Parameters
@@ -72,14 +110,85 @@ def custom_score_2(game, player):
 
     player_moves = game.get_legal_moves(player)
     opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    score = len(player_moves) - len(opponent_moves)
     
     if bool(set(player_moves) & set(opponent_moves)):
-        return len(player_moves) - len(opponent_moves) + 3
+        return score + 2.5
 
     if is_move_distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
-        return len(player_moves) - len(opponent_moves) - 3
+        return score - 2.5
     
-    return len(player_moves) - len(opponent_moves)
+    return score
+
+def custom_score_plus3_minus3(game, player):
+    """An 'advantage-aware custom score function.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """        
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+
+    player_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    score = len(player_moves) - len(opponent_moves)
+    
+    if bool(set(player_moves) & set(opponent_moves)):
+        return score + 3
+
+    if is_move_distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
+        return score - 3
+    
+    return score
+
+def custom_score_plus4_minus4(game, player):
+    """An 'advantage-aware custom score function.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : object
+        A player instance in the current game (i.e., an object corresponding to
+        one of the player objects `game.__player_1__` or `game.__player_2__`.)
+
+    Returns
+    -------
+    float
+        The heuristic value of the current game state to the specified player.
+    """        
+    if game.is_winner(player):
+        return float('inf')
+    if game.is_loser(player):
+        return float('-inf')
+
+    player_moves = game.get_legal_moves(player)
+    opponent_moves = game.get_legal_moves(game.get_opponent(player))
+    score = len(player_moves) - len(opponent_moves)
+    
+    if bool(set(player_moves) & set(opponent_moves)):
+        return score + 4
+
+    if is_move_distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
+        return score - 4
+    
+    return score
 
 def is_move_distance(square_1, square_2):
     row_1, col_1 = square_1
@@ -128,6 +237,7 @@ def custom_score_3(game, player):
     visited_squares_opponent = {current_square_opponent}
     visit_squares(game, current_square_opponent, visited_squares_opponent, depth)
     
+#    len(set(visited_squares_player) & set(visited_squares_opponent))
     return len(visited_squares_player) - len(visited_squares_opponent)
     
 def visit_squares(game, square, visited, depth):

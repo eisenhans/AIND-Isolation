@@ -254,6 +254,12 @@ class HumanPlayer():
         return legal_moves[index]
 
 
+def is_same_color(square_1, square_2):
+    return is_dark_square(square_1) == is_dark_square(square_2)
+
+def is_dark_square(square):
+    return (square[0] + square[1]) % 2
+
 def play_match(player_1, player_2, rounds):
     wins = {player_1: 0, player_2: 0}
     timeouts = 0
