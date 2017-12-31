@@ -298,6 +298,7 @@ if __name__ == "__main__":
 
     # create an isolation board (by default 7x7)
     player_1 = AlphaBetaPlayer(score_fn=custom_score)
+#    player_2 = HumanPlayer()
     player_2 = AlphaBetaPlayer(score_fn=improved_score)
     game = Board(player_1, player_2)
 

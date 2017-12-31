@@ -2,7 +2,6 @@
 test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
-import isolation
 import timeit
 
 class SearchTimeout(Exception):
@@ -38,23 +37,19 @@ def custom_score(game, player):
         return float('inf')
     if game.is_loser(player):
         return float('-inf')
-
-    player_moves = game.get_legal_moves(player)
-    opponent_moves = game.get_legal_moves(game.get_opponent(player))
     
-    if bool(set(player_moves) & set(opponent_moves)):
-        return len(player_moves) - len(opponent_moves) + 3
+    player_square = game.get_player_location(player)
+    player_squares = squares_2_moves(game, player_square)
     
-    return len(player_moves) - len(opponent_moves)
+    opp_square = game.get_player_location(game.get_opponent(player))
+    opp_squares = squares_2_moves(game, opp_square)
+    
+    common_square_factor = 0.5 if is_same_color(player_square, opp_square) else -0.5
+    return len(player_squares) - len(opp_squares) + common_square_factor * len(player_squares & opp_squares)
 
-def custom_score_plus3(game, player):
+def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
-
-    This should be the best heuristic function for your project submission.
-
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
 
     Parameters
     ----------
@@ -84,129 +79,11 @@ def custom_score_plus3(game, player):
         return score + 3
     
     return score
-
-def custom_score_plus2_5_minus2_5(game, player):
-    """An 'advantage-aware custom score function.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    player : object
-        A player instance in the current game (i.e., an object corresponding to
-        one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-    Returns
-    -------
-    float
-        The heuristic value of the current game state to the specified player.
-    """        
-    if game.is_winner(player):
-        return float('inf')
-    if game.is_loser(player):
-        return float('-inf')
-
-    player_moves = game.get_legal_moves(player)
-    opponent_moves = game.get_legal_moves(game.get_opponent(player))
-    score = len(player_moves) - len(opponent_moves)
-    
-    if bool(set(player_moves) & set(opponent_moves)):
-        return score + 2.5
-
-    if is_move_distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
-        return score - 2.5
-    
-    return score
-
-def custom_score_plus3_minus3(game, player):
-    """An 'advantage-aware custom score function.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    player : object
-        A player instance in the current game (i.e., an object corresponding to
-        one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-    Returns
-    -------
-    float
-        The heuristic value of the current game state to the specified player.
-    """        
-    if game.is_winner(player):
-        return float('inf')
-    if game.is_loser(player):
-        return float('-inf')
-
-    player_moves = game.get_legal_moves(player)
-    opponent_moves = game.get_legal_moves(game.get_opponent(player))
-    score = len(player_moves) - len(opponent_moves)
-    
-    if bool(set(player_moves) & set(opponent_moves)):
-        return score + 3
-
-    if is_move_distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
-        return score - 3
-    
-    return score
-
-def custom_score_plus4_minus4(game, player):
-    """An 'advantage-aware custom score function.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-
-    player : object
-        A player instance in the current game (i.e., an object corresponding to
-        one of the player objects `game.__player_1__` or `game.__player_2__`.)
-
-    Returns
-    -------
-    float
-        The heuristic value of the current game state to the specified player.
-    """        
-    if game.is_winner(player):
-        return float('inf')
-    if game.is_loser(player):
-        return float('-inf')
-
-    player_moves = game.get_legal_moves(player)
-    opponent_moves = game.get_legal_moves(game.get_opponent(player))
-    score = len(player_moves) - len(opponent_moves)
-    
-    if bool(set(player_moves) & set(opponent_moves)):
-        return score + 4
-
-    if is_move_distance(game.get_player_location(player), game.get_player_location(game.get_opponent(player))):
-        return score - 4
-    
-    return score
-
-def is_move_distance(square_1, square_2):
-    row_1, col_1 = square_1
-    row_2, col_2 = square_2
-    return (abs(row_1 - row_2) == 1 and abs(col_1 - col_2) == 2) or (abs(row_1 - row_2) == 2 and abs(col_1 - col_2) == 1)
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
-    This implementation is more complex than the others. For each player, the
-    squares that can be reached in the next k moves is counted. (We try k = 3.)
-    The return value is the difference between the number of squares for the
-    current player and the number of squares for his opponent. So for k = 1
-    this heuristic would be the same as improved_score.
-    
-    Result: this turns out to be too slow.
-
     Parameters
     ----------
     game : `isolation.Board`
@@ -227,41 +104,31 @@ def custom_score_3(game, player):
     if game.is_loser(player):
         return float('-inf')
     
-    depth = 3
+    player_square = game.get_player_location(player)
+    player_squares = squares_2_moves(game, player_square)
+    
+    opp_square = game.get_player_location(game.get_opponent(player))
+    opp_squares = squares_2_moves(game, opp_square)
+    
+    return len(player_squares) - len(opp_squares)
 
-    current_square_player = game.get_player_location(player)
-    visited_squares_player = {current_square_player}
-    visit_squares(game, current_square_player, visited_squares_player, depth)
-    
-    current_square_opponent = game.get_player_location(game.get_opponent(player))
-    visited_squares_opponent = {current_square_opponent}
-    visit_squares(game, current_square_opponent, visited_squares_opponent, depth)
-    
-#    len(set(visited_squares_player) & set(visited_squares_opponent))
-    return len(visited_squares_player) - len(visited_squares_opponent)
-    
-def visit_squares(game, square, visited, depth):
-    new_squares = set(get_moves(game, square)) - visited
-    visited.update(new_squares)
-    if depth == 1:
-        return
-    
-    for next_square in new_squares:
-        visit_squares(game, next_square, visited, depth - 1)
-     
-def get_moves(board, square):
-    """Generate the list of possible moves for an L-shaped motion (like a
-    knight in chess).
-    """
-    if square == isolation.Board.NOT_MOVED:
-        return board.get_blank_spaces()
+def is_same_color(square_1, square_2):
+    return square_1[0] + square_1[1] % 2 == square_2[0] + square_2[1] % 2
 
+MOVE_DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+
+def squares_2_moves(board, square):
     r, c = square
-    directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
-    valid_moves = [(r + dr, c + dc) for dr, dc in directions
-                   if board.move_is_legal((r + dr, c + dc))]
     
-    return valid_moves        
+    moves1 = set((r + dr, c + dc) for dr, dc in MOVE_DIRECTIONS if board.move_is_legal((r + dr, c + dc)))
+    
+    moves2 = set((r1 + dr, c1 + dc) for dr, dc in MOVE_DIRECTIONS for (r1, c1) in moves1
+                   if board.move_is_legal((r1 + dr, c1 + dc)))
+    
+#    print('from {} -> {} ({}) -> {} ({}), total: {}'.format(square, moves1, len(moves1), moves2, len(moves2), len(moves1 | moves2)))
+    
+    return moves1 | moves2
+
 
 class IsolationPlayer:
     """Base class for minimax and alphabeta agents -- this class is never
