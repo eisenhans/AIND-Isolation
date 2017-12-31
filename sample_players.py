@@ -7,7 +7,7 @@ own agent and example heuristic functions.
 """
 
 from random import randint, choice
-from game_agent import (AlphaBetaNoReorderPlayer, AlphaBetaPlayer, MinimaxPlayer, custom_score)
+from game_agent import (AlphaBetaPlayer, MinimaxPlayer, custom_score)
 from mixed_player import MixedPlayer, PlayoutException
 from monte_carlo_player import MonteCarloPlayer
 
@@ -132,6 +132,8 @@ def center_score(game, player):
 
     w, h = game.width / 2., game.height / 2.
     y, x = game.get_player_location(player)
+    
+    print('center score for player {} on square ({}, {}): {}'.format(player, y, x, float((h - y)**2 + (w - x)**2)))
     return float((h - y)**2 + (w - x)**2)
 
 

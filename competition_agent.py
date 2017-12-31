@@ -36,13 +36,37 @@ def squares_2_moves(board, square):
 
 
 class CustomPlayer():
-    """Identical to game_agent.AlphaBetaPlayer."""
+    """Game-playing agent that chooses a move using iterative deepening minimax
+    search with alpha-beta pruning. After each iteration, the branches are
+    reordered so that the most promising branch is considered first. This
+    improves the performance of the alpha-beta algorithm.
+    """
     def __init__(self, score_fn=custom_score, timeout=10.):
         self.score = score_fn
         self.time_left = None
         self.TIMER_THRESHOLD = timeout    
     
     def get_move(self, game, time_left):
+        """Search for the best move from the available legal moves and return a
+        result before the time limit expires.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        time_left : callable
+            A function that returns the number of milliseconds left in the
+            current turn. Returning with any less than 0 ms remaining forfeits
+            the game.
+
+        Returns
+        -------
+        (int, int)
+            Board coordinates corresponding to a legal move; may return
+            (-1, -1) if there are no available legal moves.
+        """
         self.time_left = time_left
         
         best_path = []
@@ -59,9 +83,43 @@ class CustomPlayer():
         except SearchTimeout:
             pass
 
+#        print('depth reached by player {}: {}'.format(game.active_player, depth))
+        # Return the best move from the last completed search iteration
         return best_path[0] if best_path else (-1, -1)    
 
     def alphabeta(self, game, depth, preferred_path, alpha = float("-inf"), beta = float("inf")):
+        """Implements depth-limited minimax search with alpha-beta pruning as
+        described in the lectures.
+
+        This is a modified version of ALPHA-BETA-SEARCH in the AIMA text
+        https://github.com/aimacode/aima-pseudocode/blob/master/md/Alpha-Beta-Search.md
+
+        Parameters
+        ----------
+        game : isolation.Board
+            An instance of the Isolation game `Board` class representing the
+            current game state
+
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+            
+        preferred_path : list
+            The list of moves that seemed the most promising in the last
+            iteration step
+
+        alpha : float
+            Alpha limits the lower bound of search on minimizing layers
+
+        beta : float
+            Beta limits the upper bound of search on maximizing layers
+
+        Returns
+        -------
+        (int, int)
+            The board coordinates of the best move found in the current search;
+            (-1, -1) if there are no legal moves
+        """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
@@ -72,14 +130,15 @@ class CustomPlayer():
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         
-        active_player = game.active_player
-        if depth == 0 or game.is_loser(active_player):
-            return (self.score(game, active_player), [])
+        player = game.active_player
+        if depth == 0 or game.is_loser(player):
+            return self.score(game, player), []
         
         moves = game.get_legal_moves()
         if preferred_path and preferred_path[0] in moves:
             moves.remove(preferred_path[0])
             moves = [preferred_path[0]] + moves
+            
         best_score = float("-inf")
         best_path = []
         count = 0
@@ -91,6 +150,10 @@ class CustomPlayer():
                 best_score = score
                 best_path = [move] + path
                 if best_score >= beta:
+                    # beta is what the minimizing player can have at least.
+                    # If the maximizing player can have more than beta here,
+                    # we can skip the rest of the subbranch. The whole branch
+                    # will not be chosen.
                     return (best_score, best_path)
                 
                 alpha = max(alpha, best_score)
@@ -101,14 +164,15 @@ class CustomPlayer():
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         
-        active_player = game.active_player
-        if depth == 0 or game.is_loser(active_player):
-            return (-self.score(game, active_player), [])
+        player = game.inactive_player
+        if depth == 0 or game.is_winner(player):
+            return self.score(game, player), []
         
         moves = game.get_legal_moves()
         if preferred_path and preferred_path[0] in moves:
             moves.remove(preferred_path[0])
             moves = [preferred_path[0]] + moves
+            
         best_score = float("inf")
         best_path = []
         count = 0

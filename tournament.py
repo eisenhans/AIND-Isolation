@@ -17,7 +17,7 @@ from collections import namedtuple
 
 from isolation import Board
 from sample_players import (open_move_score, improved_score)
-from game_agent import (MinimaxPlayer, AlphaBetaPlayer, AlphaBetaNoReorderPlayer,
+from game_agent import (MinimaxPlayer, AlphaBetaPlayer,
                         custom_score, custom_score_2, custom_score_3)
 from monte_carlo_player import MonteCarloPlayer
 from competition_agent import CustomPlayer
@@ -132,16 +132,15 @@ def main():
     test_agents = [
         Agent(CustomPlayer(), "Custom"),
         Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
-#        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
-#        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3"),
-#        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Impr")
+        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
+        Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3"),
+        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Impr")
     ]
 
     # Define a collection of agents to compete against the test agents
     cpu_agents = [
         Agent(AlphaBetaPlayer(score_fn=open_move_score), "AB_Open"),
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Impr"),
-        Agent(AlphaBetaNoReorderPlayer(score_fn=improved_score), "AB_NR_Impr"),
         Agent(MinimaxPlayer(score_fn=improved_score), "Minimax_Impr"),
         Agent(MonteCarloPlayer(), "MonteCarlo"),        
     ]
