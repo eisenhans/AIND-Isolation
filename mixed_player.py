@@ -1,5 +1,4 @@
 import game_agent
-import alphabeta_improved
 import isolation
 from copy import copy
 
@@ -8,10 +7,10 @@ class PlayoutException(Exception):
     pass
 
 class MixedPlayer():
-    """Player that chooses a move according to user's input."""
-
+    """A player that starts as a HumanPlayer. By typing '9' the user can
+    have AlphaBetaPlayer finish the game. Useful for experimenting.
+    """
     def __init__(self):
-#        self.autoplayer = alphabeta_improved.AdvantageAwareAlphaBetaPlayer()
         self.autoplayer = game_agent.AlphaBetaPlayer()
         self.autoplay = False
 
