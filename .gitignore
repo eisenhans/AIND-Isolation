@@ -95,3 +95,9 @@ ENV/
 .ropeproject
 
 # End of https://www.gitignore.io/api/python
+
+# Latex
+.aux
+.gz
+.log
+.out
