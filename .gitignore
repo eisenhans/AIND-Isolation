@@ -101,3 +101,7 @@ ENV/
 .gz
 .log
 .out
+
+# submission
+.json
+.zip

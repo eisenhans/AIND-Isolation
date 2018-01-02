@@ -19,16 +19,18 @@ def custom_score(game, player):
     
     return len(player_squares) - len(opp_squares) + common_square_factor * len(player_squares & opp_squares)
 
-def is_attacker(game, player):
-    player_1_location = game._board_state[-1]
-    player_2_location = game._board_state[-2]
-    initiative = game._board_state[-3]
+def is_attacker(board, player):
+    """Copied from game_agent.py."""  
+    player_1_location = board._board_state[-1]
+    player_2_location = board._board_state[-2]
+    initiative = board._board_state[-3]
     
-    return bool((player_1_location + player_2_location + initiative) % 2) == (player == game._player_2)
+    return bool((player_1_location + player_2_location + initiative) % 2) == (player == board._player_2)
 
 MOVE_DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
 
 def squares_2_moves(board, square):
+    """Copied from game_agent.py."""
     r, c = square
     
     moves1 = set((r + dr, c + dc) for dr, dc in MOVE_DIRECTIONS if board.move_is_legal((r + dr, c + dc)))
@@ -92,37 +94,27 @@ class CustomPlayer():
         return best_path[0] if best_path else (-1, -1)    
 
     def alphabeta(self, game, depth, preferred_path, alpha = float("-inf"), beta = float("inf")):
-        """Implements depth-limited minimax search with alpha-beta pruning as
-        described in the lectures.
-
-        This is a modified version of ALPHA-BETA-SEARCH in the AIMA text
-        https://github.com/aimacode/aima-pseudocode/blob/master/md/Alpha-Beta-Search.md
+        """Implements depth-limited minimax search algorithm with alpha-beta
+        pruning as described in the lectures.
 
         Parameters
         ----------
         game : isolation.Board
             An instance of the Isolation game `Board` class representing the
             current game state
-
         depth : int
             Depth is an integer representing the maximum number of plies to
             search in the game tree before aborting
-            
         preferred_path : list
-            The list of moves that seemed the most promising in the last
-            iteration step
-
-        alpha : float
-            Alpha limits the lower bound of search on minimizing layers
-
-        beta : float
-            Beta limits the upper bound of search on maximizing layers
-
+            The list of moves that seemed most promising in the last iteration
+            step. The first element is the move from the current position, the
+            second element is the move that should be played next, etc.
         Returns
         -------
-        (int, int)
-            The board coordinates of the best move found in the current search;
-            (-1, -1) if there are no legal moves
+        (float, list)
+            A tuple consisting of the score of the position and the list of
+            moves that seem most promising in this search. If there
+            are no more legal moves, an empty list is returned.
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
@@ -131,6 +123,22 @@ class CustomPlayer():
         return path
         
     def max_value(self, game, depth, preferred_path, alpha, beta):
+        """The max function of the minimax algorithm with alpha-beta pruning.
+        
+        Parameters
+        ----------
+        game : isolation.Board
+            a game position
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+        Returns
+        -------
+        (float, list)
+            A tuple containing the score of the best move (from the perspective
+            of the max player) found in the current search and the list of
+            moves that lead to this score.
+        """          
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         
@@ -162,9 +170,25 @@ class CustomPlayer():
                 
                 alpha = max(alpha, best_score)
         
-        return (best_score, best_path)
+        return best_score, best_path
 
     def min_value(self, game, depth, preferred_path, alpha, beta):
+        """The min function of the minimax algorithm with alpha-beta pruning.
+        
+        Parameters
+        ----------
+        game : isolation.Board
+            a game position
+        depth : int
+            Depth is an integer representing the maximum number of plies to
+            search in the game tree before aborting
+        Returns
+        -------
+        (float, list)
+            A tuple containing the score of the best move (from the perspective
+            of the min player) found in the current search and the list of
+            moves that lead to this score.
+        """             
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
         
@@ -192,7 +216,7 @@ class CustomPlayer():
                 
                 beta = min(beta, best_score)
         
-        return (best_score, best_path)      
+        return best_score, best_path   
     
     def __str__(self):
         return type(self).__name__ + '|' + str(self.score.__name__)
