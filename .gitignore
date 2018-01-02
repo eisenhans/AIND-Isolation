@@ -97,11 +97,11 @@ ENV/
 # End of https://www.gitignore.io/api/python
 
 # Latex
-.aux
-.gz
-.log
-.out
+*.aux
+*.gz
+*.log
+*.out
 
 # submission
-.json
-.zip
+*.json
+*.zip
