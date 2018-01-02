@@ -371,7 +371,14 @@ Here are the match results:
 
 The results show that my custom evaluation function (AB\_Custom) is
 stronger than the others (AB\_Custom\_2, AB\_Custom\_3, and
-AB\_Improved). Improving the alpha-beta algorithm by reordering the
-moves (Custom) yields even slightly better results.
+AB\_Improved). Therefore I recommend this evaluation function. Even though this evaluation function is more complex than the others, it seems plausible that it performs better for the following reasons:
+
+\begin{itemize}
+    \item It goes one ply deeper than improved\_score and custom\_score\_2.
+    \item It takes into account that the attacking player has an advantage if both players compete for the same squares.
+    \item It is not \emph{much} more complex than the other evaluation functions.
+\end{itemize}
+
+Improving the alpha-beta algorithm by reordering the moves (Custom) yields even slightly better results. Therefore this is the strongest agent.
 
 \end{document}
