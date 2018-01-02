@@ -39,7 +39,7 @@ def custom_score(game, player):
     opp_square = game.get_player_location(game.get_opponent(player))
     opp_squares = squares_2_moves(game, opp_square)
     
-    common_square_factor = 0.5 if has_advantage(game, player) else -0.5
+    common_square_factor = 0.5 if is_attacker(game, player) else -0.5
     
     return len(player_squares) - len(opp_squares) + common_square_factor * len(player_squares & opp_squares)
 
@@ -58,7 +58,7 @@ def custom_score_2(game, player):
     score = float(len(player_moves) - len(opponent_moves))
     
     if bool(set(player_moves) & set(opponent_moves)):
-        if has_advantage(game, player):
+        if is_attacker(game, player):
             return score + 3.
         return score - 3.
     
@@ -81,15 +81,12 @@ def custom_score_3(game, player):
     
     return float(len(player_squares) - len(opp_squares))
 
-def has_advantage(game, player):
-    # ToDo: simplify
-    active_player_loc = game.get_player_location(game.active_player)
-    inactive_player_loc = game.get_player_location(game.inactive_player)
+def is_attacker(game, player):
+    player_1_location = game._board_state[-1]
+    player_2_location = game._board_state[-2]
+    initiative = game._board_state[-3]
     
-    return (game.active_player == player) == is_same_color(active_player_loc, inactive_player_loc)
-
-def is_same_color(square_1, square_2):
-    return square_1[0] + square_1[1] % 2 == square_2[0] + square_2[1] % 2
+    return bool((player_1_location + player_2_location + initiative) % 2) == (player == game._player_2)
 
 MOVE_DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
 

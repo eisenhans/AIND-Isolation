@@ -15,12 +15,16 @@ def custom_score(game, player):
     opp_square = game.get_player_location(game.get_opponent(player))
     opp_squares = squares_2_moves(game, opp_square)
     
-    common_square_factor = 0.5 if is_same_color(player_square, opp_square) else -0.5
+    common_square_factor = 0.5 if is_attacker(game, player) else -0.5
     
     return len(player_squares) - len(opp_squares) + common_square_factor * len(player_squares & opp_squares)
 
-def is_same_color(square_1, square_2):
-    return square_1[0] + square_1[1] % 2 == square_2[0] + square_2[1] % 2
+def is_attacker(game, player):
+    player_1_location = game._board_state[-1]
+    player_2_location = game._board_state[-2]
+    initiative = game._board_state[-3]
+    
+    return bool((player_1_location + player_2_location + initiative) % 2) == (player == game._player_2)
 
 MOVE_DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
 
