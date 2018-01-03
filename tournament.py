@@ -22,7 +22,7 @@ from game_agent import (MinimaxPlayer, AlphaBetaPlayer,
 from monte_carlo_player import MonteCarloPlayer
 from competition_agent import CustomPlayer
 
-NUM_MATCHES = 1  # number of matches against each opponent
+NUM_MATCHES = 5  # number of matches against each opponent
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """

@@ -8,6 +8,7 @@ import timeit
 
 import isolation
 import game_agent
+import competition_agent
 import sample_players
 
 from importlib import reload
@@ -84,7 +85,7 @@ class IsolationTest(unittest.TestCase):
     def test_alphabeta_iterative_deepening_2(self):
         player = game_agent.AlphaBetaPlayer(score_fn=game_agent.custom_score_2)
         best_move = player.get_move(self.board, self.create_clock())
-        self.assertTrue(best_move in [(2, 3), (2, 5), (3, 6), (5, 2), (5, 6), (6, 3)], 'best move: ' + str(best_move))          
+        self.assertTrue(best_move in [(2, 3), (3, 2), (2, 5), (3, 6), (5, 2), (5, 6), (6, 5), (6, 3)], 'best move: ' + str(best_move))          
 
     def test_minimax_udacity(self):
         player = game_agent.MinimaxPlayer(score_fn=sample_players.center_score)
@@ -105,13 +106,25 @@ class IsolationTest(unittest.TestCase):
         best_move = player.minimax(board, 1)
         self.assertTrue(best_move in [(7, 8), (8, 7)], 'best move: ' + str(best_move))
         
-    def test_is_attacker(self):
+    def test_is_attacker_game_agent(self):
         self.assertTrue(game_agent.is_attacker(self.board, self.player1))
         self.assertFalse(game_agent.is_attacker(self.board, self.player2))
         
         self.board.apply_move((5, 6))
         self.assertTrue(game_agent.is_attacker(self.board, self.player1))
         self.assertFalse(game_agent.is_attacker(self.board, self.player2))
+
+    def test_score_competition_agent(self):
+        self.assertEquals(14.5, competition_agent.custom_score(self.board, self.player1))
+        self.assertEquals(-14.5, competition_agent.custom_score(self.board, self.player2))
+        
+        moved_away = self.board.forecast_move((5, 6))
+        self.assertEquals(-6.5, competition_agent.custom_score(moved_away, self.player1))
+        self.assertEquals(6.5, competition_agent.custom_score(moved_away, self.player2))
+        
+        moved_towards = self.board.forecast_move((3, 2))
+        self.assertEquals(10.5, competition_agent.custom_score(moved_towards, self.player1))
+        self.assertEquals(-10.5, competition_agent.custom_score(moved_towards, self.player2))        
 
 if __name__ == '__main__':
     unittest.main()

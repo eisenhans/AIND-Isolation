@@ -15,17 +15,13 @@ def custom_score(game, player):
     opp_square = game.get_player_location(game.get_opponent(player))
     opp_squares = squares_2_moves(game, opp_square)
     
-    common_square_factor = 0.5 if is_attacker(game, player) else -0.5
+    # player is the attacker if:
+    # 1) the players are on squares of different color and player is inactive or
+    # 2) the players are on squares of the same color and player is active
+    is_attacker = bool((player_square[0] + player_square[1] + opp_square[0] + opp_square[1]) % 2) == (player == game.inactive_player)
+    common_square_factor = 0.5 if is_attacker else -0.5
     
     return len(player_squares) - len(opp_squares) + common_square_factor * len(player_squares & opp_squares)
-
-def is_attacker(board, player):
-    """Copied from game_agent.py."""  
-    player_1_location = board._board_state[-1]
-    player_2_location = board._board_state[-2]
-    initiative = board._board_state[-3]
-    
-    return bool((player_1_location + player_2_location + initiative) % 2) == (player == board._player_2)
 
 MOVE_DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
 
